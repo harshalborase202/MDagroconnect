@@ -420,8 +420,8 @@
             <div class="footer-col">
                 <h3>MD Agro Newsletter</h3>
                 <p style="font-size:0.85rem; margin-bottom:15px;">Receive monthly crop advisory tips, weather warnings, and new product discount alerts.</p>
-                <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed successfully!'); this.reset();">
-                    <input type="email" placeholder="Email Address" required>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" id="newsletter-email" placeholder="Email Address" required>
                     <button type="submit" class="btn btn-accent btn-sm">Join</button>
                 </form>
             </div>

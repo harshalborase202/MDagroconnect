@@ -304,6 +304,10 @@ const ADVISORY_DATABASE = {
     }
 };
 
+// ─── Backend API Base URL ────────────────────────────────────────────────
+// Update this if your backend runs on a different port or host.
+const API_BASE = 'http://localhost:3001/api';
+
 // Application State
 let cart = [];
 let activeCategory = 'all';
@@ -697,13 +701,32 @@ function setupEventListeners() {
         });
     }
 
+    // Advisory dropdowns — log selection to backend analytics
+    const advisoryLogDebounce = (() => {
+        let timer;
+        return () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                const crop  = document.getElementById('advisory-crop')?.value;
+                const issue = document.getElementById('advisory-issue')?.value;
+                if (crop && issue) {
+                    fetch(`${API_BASE}/advisory/log`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ crop, issue }),
+                    }).catch(() => { /* analytics failure is non-critical */ });
+                }
+            }, 600);
+        };
+    })();
+
     // Crop Advisory Interactive Wizard
     const advisoryCrop = document.getElementById('advisory-crop');
     const advisoryIssue = document.getElementById('advisory-issue');
 
     if (advisoryCrop && advisoryIssue) {
-        advisoryCrop.addEventListener('change', renderAdvisoryResult);
-        advisoryIssue.addEventListener('change', renderAdvisoryResult);
+        advisoryCrop.addEventListener('change', () => { renderAdvisoryResult(); advisoryLogDebounce(); });
+        advisoryIssue.addEventListener('change', () => { renderAdvisoryResult(); advisoryLogDebounce(); });
     }
 
     // Modal Close
@@ -720,34 +743,55 @@ function setupEventListeners() {
         });
     }
 
-    // Contact Form submission
+    // Contact Form submission — posts to backend API
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = contactForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            const originalHTML = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = `
                 <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
                     <path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path>
                 </svg> Sending...`;
-            
-            setTimeout(() => {
-                // Success message
+
+            const name    = contactForm.querySelector('#contact-name')?.value  || contactForm.querySelector('[name="name"]')?.value  || '';
+            const email   = contactForm.querySelector('#contact-email')?.value || contactForm.querySelector('[name="email"]')?.value || '';
+            const phone   = contactForm.querySelector('#contact-phone')?.value || contactForm.querySelector('[name="phone"]')?.value || '';
+            const message = contactForm.querySelector('#contact-msg')?.value   || contactForm.querySelector('[name="message"]')?.value || contactForm.querySelector('textarea')?.value || '';
+
+            try {
+                const res  = await fetch(`${API_BASE}/contact`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ name, email, phone, message }),
+                });
+                const data = await res.json();
+
                 const formGroup = contactForm.parentElement;
-                formGroup.innerHTML = `
-                    <div class="success-alert fade-in">
-                        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" style="margin-bottom:15px;">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                        <h3>Thank You!</h3>
-                        <p>Your message has been sent successfully. An MD Agro advisor will contact you within 24 hours.</p>
-                    </div>
-                `;
-            }, 1500);
+                if (res.ok && data.success) {
+                    formGroup.innerHTML = `
+                        <div class="success-alert fade-in">
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" style="margin-bottom:15px;">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            <h3>Thank You!</h3>
+                            <p>${data.message}</p>
+                        </div>`;
+                } else {
+                    submitBtn.disabled  = false;
+                    submitBtn.innerHTML = originalHTML;
+                    const errMsg = data.errors ? data.errors.map(e => e.msg).join(' ') : (data.message || 'Failed to send. Please try again.');
+                    showToast('⚠ ' + errMsg);
+                }
+            } catch (err) {
+                submitBtn.disabled  = false;
+                submitBtn.innerHTML = originalHTML;
+                showToast('⚠ Could not reach the server. Please check your connection.');
+            }
         });
     }
 
@@ -766,6 +810,38 @@ function setupEventListeners() {
                 navLinks.classList.remove('active');
                 navMenuBtn.classList.remove('active');
             });
+        });
+    }
+
+    // Newsletter subscription — posts to backend API
+    const newsletterForm = document.getElementById('newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('newsletter-email');
+            const submitBtn  = newsletterForm.querySelector('button[type="submit"]');
+            const email = emailInput?.value.trim();
+            if (!email) return;
+
+            const orig = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '...';
+
+            try {
+                const res  = await fetch(`${API_BASE}/newsletter/subscribe`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ email }),
+                });
+                const data = await res.json();
+                showToast(data.success ? '✅ ' + data.message : '⚠ ' + (data.message || 'Subscription failed.'));
+                if (res.ok && data.success) newsletterForm.reset();
+            } catch {
+                showToast('⚠ Could not reach server. Please try again.');
+            } finally {
+                submitBtn.disabled  = false;
+                submitBtn.innerHTML = orig;
+            }
         });
     }
 }
@@ -897,9 +973,55 @@ function updateCartUI() {
 }
 
 // Process Checkout Simulation
-function processCheckout() {
+async function processCheckout() {
+    const name    = document.getElementById('chk-name')?.value.trim()    || '';
+    const phone   = document.getElementById('chk-phone')?.value.trim()   || '';
+    const address = document.getElementById('chk-address')?.value.trim() || '';
+
+    if (!name || !phone || !address) {
+        showToast('⚠ Please fill in all delivery details.');
+        return;
+    }
+
+    const checkoutBtn = document.getElementById('cart-checkout-btn');
+    const origBtnText = checkoutBtn ? checkoutBtn.innerHTML : '';
+    if (checkoutBtn) {
+        checkoutBtn.disabled  = true;
+        checkoutBtn.innerHTML = `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path></svg> Placing Order...`;
+    }
+
+    const items = cart.map(item => ({
+        productId: item.product.id,
+        quantity:  item.quantity,
+    }));
+
+    try {
+        const res  = await fetch(`${API_BASE}/orders`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ customerName: name, phone, address, items }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            _showCheckoutSuccess(data);
+        } else {
+            if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = origBtnText; }
+            const errMsg = data.errors ? data.errors.map(e => e.msg).join(' ') : (data.message || 'Order failed. Please try again.');
+            showToast('⚠ ' + errMsg);
+        }
+    } catch (err) {
+        if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = origBtnText; }
+        showToast('⚠ Cannot reach server. Please check your internet connection.');
+    }
+}
+
+function _showCheckoutSuccess(data) {
     const checkoutContainer = document.getElementById('cart-drawer-content');
     if (!checkoutContainer) return;
+
+    const orderRef = data.orderId ? `#${data.orderId}` : '';
+    const totalAmt = data.totalAmount ? `₹${Number(data.totalAmount).toLocaleString('en-IN')}` : '';
 
     checkoutContainer.innerHTML = `
         <div class="checkout-success-view fade-in">
@@ -908,11 +1030,12 @@ function processCheckout() {
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
             <h2>Order Placed!</h2>
-            <p>Your order request has been registered. Our representative will contact you shortly to confirm the delivery schedule and payment terms.</p>
+            ${orderRef ? `<p style="font-size:0.85rem;color:#666;">Order Ref: <strong>${orderRef}</strong>${totalAmt ? ' &nbsp;|&nbsp; Total: <strong>' + totalAmt + '</strong>' : ''}</p>` : ''}
+            <p>Your order has been registered in our system. Our representative will contact you shortly to confirm delivery.</p>
             <div class="order-summary-box">
                 <h4>Items Ordered:</h4>
                 <ul>
-                    ${cart.map(item => `<li>${item.product.name} x ${item.quantity}</li>`).join('')}
+                    ${cart.map(item => `<li>${item.product.name} &times; ${item.quantity}</li>`).join('')}
                 </ul>
             </div>
             <button class="btn btn-primary" id="btn-close-checkout" style="margin-top:20px; width:100%;">Return to Shop</button>
@@ -928,10 +1051,7 @@ function processCheckout() {
         closeBtn.addEventListener('click', () => {
             document.getElementById('cart-drawer').classList.remove('active');
             document.getElementById('cart-overlay').classList.remove('active');
-            // Restore cart drawer view state for next time
-            setTimeout(() => {
-                restoreCartDrawerHTML();
-            }, 500);
+            setTimeout(() => { restoreCartDrawerHTML(); }, 500);
         });
     }
 }
