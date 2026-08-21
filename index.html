@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MD Agro Services - Your ultimate premium agricultural supplier. Premium hybrid seeds, top-grade fertilizers, biological crop protection, and expert agronomy consulting services.">
-    <title>MD Agro Services | Premium Agricultural Products & Advisory</title>
+    <meta name="description" content="MD Agro Services - Your ultimate premium agricultural supplier. Certified hybrid seeds, fertilizers, crop protection, and expert agronomy consulting.">
+    <title>MD Agro Services | Home - Next-Gen Agricultural Solutions</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <!-- Sticky Navigation Header -->
     <header>
         <div class="container header-container">
-            <a href="#" class="logo-section">
+            <a href="index.html" class="logo-section">
                 <span class="logo-icon">🌱</span>
                 <div class="logo-text">
                     <h1>MD AGRO</h1>
@@ -21,11 +21,11 @@
             </a>
             
             <nav class="nav-links-wrapper" id="nav-links">
-                <a href="#" class="active">Home</a>
-                <a href="#advisor">Crop Advisor</a>
-                <a href="#catalog">Products</a>
-                <a href="#services">Seasonal Guides</a>
-                <a href="#contact">Contact</a>
+                <a href="index.html" class="active">Home</a>
+                <a href="products.html">Products Catalog</a>
+                <a href="advisor.html">Crop Advisor</a>
+                <a href="services.html">Seasonal Guides</a>
+                <a href="contact.html">Contact Us</a>
             </nav>
             
             <div class="header-actions">
@@ -54,8 +54,8 @@
                 <h2>Empowering Farms with <span class="font-serif">Next-Gen</span> Agricultural Excellence</h2>
                 <p>MD Agro Services provides certified high-germination seeds, eco-friendly bio-pesticides, water-soluble fertilizers, and expert-led crop diagnostic advisors directly to your fields. Grow healthier, yield higher.</p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="#catalog" class="btn btn-primary btn-lg">Explore Catalog</a>
-                    <a href="#advisor" class="btn btn-secondary btn-lg">Consult AI Advisor</a>
+                    <a href="products.html" class="btn btn-primary btn-lg">Explore Catalog</a>
+                    <a href="advisor.html" class="btn btn-secondary btn-lg">Consult AI Advisor</a>
                 </div>
                 <div class="hero-badges">
                     <div class="hero-badge-item">
@@ -73,7 +73,6 @@
                 </div>
             </div>
             <div class="hero-illustration">
-                <!-- Gorgeous Vector Flat Agronomy Illustration -->
                 <svg class="main-illustration-svg" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -85,26 +84,15 @@
                             <stop offset="100%" stop-color="#ffb300"/>
                         </linearGradient>
                     </defs>
-                    <!-- Background Sun -->
                     <circle cx="380" cy="180" r="70" fill="url(#grad2)" opacity="0.6"/>
-                    <!-- Hills -->
                     <path d="M-50 480 C100 380 200 450 350 380 C450 330 500 360 550 480 Z" fill="url(#grad1)" opacity="0.85"/>
                     <path d="M50 480 C180 320 280 400 380 350 C480 300 550 320 600 480 Z" fill="#1b5e20" opacity="0.9"/>
-                    <!-- Tractor (Minimalist SVG Representation) -->
                     <rect x="260" y="325" width="80" height="50" rx="8" fill="#d84315"/>
                     <rect x="300" y="295" width="35" height="32" rx="4" fill="#ffffff" stroke="#d84315" stroke-width="3"/>
                     <circle cx="280" cy="375" r="18" fill="#37474f" stroke="#ffffff" stroke-width="3"/>
                     <circle cx="330" cy="375" r="14" fill="#37474f" stroke="#ffffff" stroke-width="3"/>
                     <rect x="250" y="335" width="12" height="15" fill="#cfd8dc"/>
                     <path d="M268 325 L268 280" stroke="#37474f" stroke-width="4" stroke-linecap="round"/>
-                    <!-- Crop Sprout Vectors -->
-                    <path d="M80 440 C75 400 110 380 120 350" stroke="#a5d6a7" stroke-width="6" stroke-linecap="round" fill="none"/>
-                    <path d="M120 350 C110 360 90 365 80 360" stroke="#81c784" stroke-width="4" stroke-linecap="round" fill="none"/>
-                    <path d="M120 350 C130 360 145 365 155 362" stroke="#81c784" stroke-width="4" stroke-linecap="round" fill="none"/>
-                    <circle cx="120" cy="346" r="3" fill="#ffe082"/>
-                    
-                    <path d="M180 450 C175 410 210 395 215 370" stroke="#a5d6a7" stroke-width="5" stroke-linecap="round" fill="none"/>
-                    <path d="M215 370 C205 380 190 382 182 378" stroke="#81c784" stroke-width="3.5" stroke-linecap="round" fill="none"/>
                 </svg>
             </div>
         </div>
@@ -138,126 +126,39 @@
         </div>
     </section>
 
-    <!-- Crop Care Advisor Tool -->
-    <section class="section" id="advisor" style="background-color: #f0f4f2;">
+    <!-- Featured Products Preview Section -->
+    <section class="section" style="background-color: #fcfdfd;">
+        <div class="container">
+            <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:15px;">
+                <div>
+                    <h2>Featured Products</h2>
+                    <p>Explore top-performing agricultural inputs trusted by farmers nationwide.</p>
+                </div>
+                <a href="products.html" class="btn btn-secondary">View Full Catalog &rarr;</a>
+            </div>
+            
+            <div class="products-grid" id="featured-products-grid">
+                <!-- Top 4 products loaded dynamically via app.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Agronomy Feature Teaser Box -->
+    <section class="section" style="background-color: #f0f4f2;">
         <div class="container">
             <div class="advisor-wrapper">
-                <div class="advisor-grid">
-                    <div class="advisor-header-inline">
-                        <h2>Smart Crop Care Advisor</h2>
-                        <p>Are your crops facing yellowing leaves, pests, or poor growth? Select your crop type and present symptom, and our agronomist system will instantly generate diagnostic advice and recommend targeted solutions.</p>
-                        
-                        <div class="advisor-form">
-                            <div class="form-group">
-                                <label for="advisory-crop">Cultivating Crop</label>
-                                <select id="advisory-crop" class="form-control">
-                                    <option value="cotton">Cotton (Kapas)</option>
-                                    <option value="wheat">Wheat (Gehun)</option>
-                                    <option value="paddy">Paddy / Rice (Dhan)</option>
-                                    <option value="vegetables">Vegetables (Tamatar/Mirch/Aloo)</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="advisory-issue">Primary Soil or Leaf Symptom</label>
-                                <select id="advisory-issue" class="form-control">
-                                    <option value="deficiency">Yellowing Leaves / Stunted Growth (Nutrient Deficiency)</option>
-                                    <option value="pests">Visible Insect Pests / Leaf Sucking Bugs (Pest Attack)</option>
-                                    <option value="fungal">Leaf Spots / Powdery Coating / Root Rot (Fungal Infection)</option>
-                                    <option value="acidity">Sour / Hard Crusty Clay Soil (Soil Acidity)</option>
-                                    <option value="water">Dry Crumbling Cracks / Mud Waterlogging (Water Stress)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="advisory-output-panel" id="advisory-result">
-                        <!-- Content rendered dynamically via JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Products Catalog Section -->
-    <section class="section" id="catalog">
-        <div class="container">
-            <div class="section-header">
-                <h2>Product Catalog</h2>
-                <p>Browse our range of high-efficiency farm products. Filter by category, search specific brands, or view recommended details.</p>
-            </div>
-            
-            <div class="catalog-controls">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-category="all">All Products</button>
-                    <button class="filter-btn" data-category="seeds">Hybrid Seeds</button>
-                    <button class="filter-btn" data-category="fertilizers">Fertilizers</button>
-                    <button class="filter-btn" data-category="protection">Crop Protection</button>
-                    <button class="filter-btn" data-category="tools">Tools & Sprayers</button>
-                </div>
-                
-                <div class="search-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="catalog-search" placeholder="Search seeds, fertilizers...">
-                </div>
-            </div>
-            
-            <div class="products-grid" id="products-grid">
-                <!-- Products loaded via JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Seasonal Farm Guides / Services Section -->
-    <section class="section" id="services" style="background-color: #fdfdfd; border-top: 1px solid var(--border-color);">
-        <div class="container">
-            <div class="section-header">
-                <h2>Seasonal Agronomy Guides</h2>
-                <p>Expert tips from MD Agro Services to help you plan your soil fertilization and crop cycles strategically throughout the year.</p>
-            </div>
-            
-            <div class="guide-card-row">
-                <div class="guide-card">
-                    <span class="guide-season">Kharif Cycle (June - Oct)</span>
-                    <h3>Monsoon Sowing & Fungicides</h3>
-                    <p>High humidity causes fungal leaf spot and root rot in cotton and paddy seedlings.</p>
-                    <ul class="bullet-list">
-                        <li>Treat paddy seeds with systemic fungicide prior to transplanting.</li>
-                        <li>Ensure field channels are clear to prevent water logging.</li>
-                        <li>Apply vermicompost early to improve monsoon root aeration.</li>
-                    </ul>
-                </div>
-                
-                <div class="guide-card">
-                    <span class="guide-season">Rabi Cycle (Nov - April)</span>
-                    <h3>Winter Irrigation & Rust Defense</h3>
-                    <p>Wheat tillering requires balanced fertilizer dosing. Dry climate invites aphids.</p>
-                    <ul class="bullet-list">
-                        <li>Irrigate wheat crops at critical Crown Root Initiation (21 days).</li>
-                        <li>Monitor crops for yellow rust powdery marks. Spray instantly.</li>
-                        <li>Foliar spray liquid growth boosters at pre-flowering.</li>
-                    </ul>
-                </div>
-                
-                <div class="guide-card">
-                    <span class="guide-season">Summer Cycle (May - June)</span>
-                    <h3>Soil Preparation & Sun Care</h3>
-                    <p>Deep summer plowing exposes pests and pathogens to soil sterilization by solar heat.</p>
-                    <ul class="bullet-list">
-                        <li>Incorporate heavy vermicompost to increase soil water retention.</li>
-                        <li>Analyze soil pH with digital meters before ordering fertilizers.</li>
-                        <li>Keep sprinkler nozzle lines clear for hot-dry afternoons.</li>
-                    </ul>
+                <div style="text-align: center; max-width: 750px; margin: 0 auto;">
+                    <span class="badge category-badge" style="margin-bottom: 12px; background: #e8f5e9; color: #1b5e20;">AI AGRONOMY CONSULTANT</span>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 15px; color: var(--primary-dark);">Diagnose Crop Symptoms Instantly</h2>
+                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.6;">Experiencing yellowing leaves, pest attacks, or soil acidity issues? Our Smart AI Crop Advisor matches leaf symptoms to soil science and provides actionable treatment plans.</p>
+                    <a href="advisor.html" class="btn btn-primary btn-lg">Launch Smart Crop Advisor &rarr;</a>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Testimonials section -->
-    <section class="section" style="background-color: #f0f4f2;">
+    <section class="section">
         <div class="container">
             <div class="section-header">
                 <h2>Trusted by 10,000+ Farmers</h2>
@@ -304,140 +205,57 @@
         </div>
     </section>
 
-    <!-- Contact & FAQ Section -->
-    <section class="section" id="contact">
-        <div class="container contact-section-grid">
-            <div class="contact-card-info">
-                <h3>Contact & Support</h3>
-                <div class="contact-info-list">
-                    <div class="contact-info-item">
-                        <div class="contact-info-icon">📍</div>
-                        <div class="contact-info-text">
-                            <h4>Main Market Shop</h4>
-                            <p>Block B, Shop No 14-16, Agriculture Market Yard, India</p>
-                        </div>
-                    </div>
-                    <div class="contact-info-item">
-                        <div class="contact-info-icon">📞</div>
-                        <div class="contact-info-text">
-                            <h4>Call/WhatsApp Expert</h4>
-                            <p>+91 98765 43210 (Consultation Hours: 8 AM - 8 PM)</p>
-                        </div>
-                    </div>
-                    <div class="contact-info-item">
-                        <div class="contact-info-icon">✉️</div>
-                        <div class="contact-info-text">
-                            <h4>Email Us</h4>
-                            <p>support@mdagroservices.com</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="contact-faq">
-                    <h4>Frequently Asked Questions</h4>
-                    <div class="faq-accordion">
-                        <details class="faq-item">
-                            <summary class="faq-summary">How long does home delivery take?</summary>
-                            <p class="faq-content">We deliver agricultural inputs directly to your village or farm within 24 to 48 hours from confirmation.</p>
-                        </details>
-                        <details class="faq-item">
-                            <summary class="faq-summary">Are your seeds officially certified?</summary>
-                            <p class="faq-content">Yes, all seeds in our catalog are fully certified, truth-labeled, and source-tested for optimal moisture and germination standards.</p>
-                        </details>
-                        <details class="faq-item">
-                            <summary class="faq-summary">Do you offer payment on delivery?</summary>
-                            <p class="faq-content">Yes. Farmers can pay via Cash, UPI, or Net Banking once products are safely unloaded at their delivery locations.</p>
-                        </details>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="contact-form-wrapper">
-                <h3>Send a Message to our Agronomists</h3>
-                <form id="contact-form">
-                    <div class="form-group">
-                        <label for="c-name">Full Name / Farmer Name</label>
-                        <input type="text" id="c-name" placeholder="Enter your name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="c-phone">Phone Number</label>
-                        <input type="tel" id="c-phone" placeholder="Enter mobile number" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="c-crop">Crop Growing</label>
-                        <input type="text" id="c-crop" placeholder="e.g. Cotton, Wheat, Sugarcane">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="c-message">Describe Your Issue or Order Query</label>
-                        <textarea id="c-message" rows="5" placeholder="Tell us how we can help you..." required></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block btn-lg">Submit Advisory Request</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
+    <!-- Global Footer -->
     <footer>
         <div class="container footer-grid">
-            <div class="footer-col">
-                <a href="#" class="logo-section" style="margin-bottom:20px;">
+            <div class="footer-col brand-col">
+                <div class="logo-section light-logo">
                     <span class="logo-icon">🌱</span>
                     <div class="logo-text">
-                        <h1 style="color:#ffffff;">MD AGRO</h1>
-                        <span style="color:#a3c1b4;">Services</span>
+                        <h3>MD AGRO</h3>
+                        <span>Services</span>
                     </div>
-                </a>
-                <p class="footer-desc">Premium agricultural products and diagnostics. Serving farmers with top quality, certified organic solutions, and state-certified seeds to ensure higher productivity.</p>
+                </div>
+                <p>Empowering farming communities with science-backed agricultural products and expert agronomy consulting.</p>
             </div>
             
             <div class="footer-col">
-                <h3>Quick Navigation</h3>
+                <h4>Quick Links</h4>
                 <ul class="footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#advisor">Crop Advisor</a></li>
-                    <li><a href="#catalog">Products Catalog</a></li>
-                    <li><a href="#services">Seasonal Guides</a></li>
-                    <li><a href="#contact">Contact Support</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Product Catalog</a></li>
+                    <li><a href="advisor.html">AI Crop Advisor</a></li>
+                    <li><a href="services.html">Seasonal Guides</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
                 </ul>
             </div>
             
             <div class="footer-col">
-                <h3>Product Lines</h3>
+                <h4>Categories</h4>
                 <ul class="footer-links">
-                    <li><a href="#catalog">Hybrid Seeds</a></li>
-                    <li><a href="#catalog">NPK Fertilizers</a></li>
-                    <li><a href="#catalog">Bio-Pesticides</a></li>
-                    <li><a href="#catalog">Organic Compost</a></li>
-                    <li><a href="#catalog">Knapsack Sprayers</a></li>
+                    <li><a href="products.html">Certified Seeds</a></li>
+                    <li><a href="products.html">Soluble Fertilizers</a></li>
+                    <li><a href="products.html">Bio-Pesticides</a></li>
+                    <li><a href="products.html">Sprayers & Tools</a></li>
                 </ul>
             </div>
             
             <div class="footer-col">
-                <h3>MD Agro Newsletter</h3>
-                <p style="font-size:0.85rem; margin-bottom:15px;">Receive monthly crop advisory tips, weather warnings, and new product discount alerts.</p>
-                <form class="newsletter-form" id="newsletter-form">
-                    <input type="email" id="newsletter-email" placeholder="Email Address" required>
-                    <button type="submit" class="btn btn-accent btn-sm">Join</button>
-                </form>
+                <h4>Farm Helpline</h4>
+                <p style="color:#a3e635; font-weight:bold; font-size:1.1rem; margin-bottom:8px;">📞 +91 98765 43210</p>
+                <p style="font-size:0.85rem;">Mon - Sat: 8:00 AM - 8:00 PM</p>
+                <p style="font-size:0.85rem; margin-top:8px;">Village Delivery Available</p>
             </div>
         </div>
         
-        <div class="container footer-bottom">
-            <p>&copy; 2026 MD Agro Services. All rights reserved. Designed for Premium Agricultural Performance.</p>
-            <div class="footer-socials">
-                <a href="#" aria-label="Facebook">FB</a>
-                <a href="#" aria-label="WhatsApp">WA</a>
-                <a href="#" aria-label="YouTube">YT</a>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Shopping Cart Drawer Overlay and Sidebar -->
+    <!-- Shopping Cart Side Drawer -->
     <div class="cart-overlay" id="cart-overlay"></div>
     <div class="cart-drawer" id="cart-drawer">
         <div class="cart-drawer-header">
@@ -445,9 +263,7 @@
             <button class="close-btn" id="close-cart">&times;</button>
         </div>
         <div id="cart-drawer-content">
-            <div class="cart-items-wrapper" id="cart-items-container">
-                <!-- Cart items load here dynamically -->
-            </div>
+            <div class="cart-items-wrapper" id="cart-items-container"></div>
             <div class="cart-footer">
                 <div class="cart-summary">
                     <span class="label">Total Amount:</span>
@@ -472,69 +288,41 @@
         </div>
     </div>
 
-    <!-- Product Detail Modal Popup -->
-    <div class="product-modal" id="product-modal">
-        <div class="product-modal-container">
-            <button class="modal-close-btn" id="product-modal-close">&times;</button>
-            <div class="product-modal-content" id="product-modal-body">
-                <!-- Loaded Dynamically via JS -->
-            </div>
+    <!-- Product Detail Quick View Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <div id="product-modal-body"></div>
         </div>
     </div>
 
-    <!-- AI Agronomist Chatbot Widget -->
-    <div class="chatbot-widget-wrapper">
-        <button class="chatbot-toggle-btn" id="chatbot-toggle" aria-label="AI Chatbot Advisor">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-        </button>
-        
-        <div class="chatbot-widget-container" id="chatbot-container">
-            <div class="chatbot-header">
-                <div class="bot-info">
-                    <div class="bot-avatar-main">🌱</div>
-                    <div class="bot-text">
-                        <h4>AI Agronomist</h4>
-                        <div class="bot-status">Active Online</div>
-                    </div>
-                </div>
-                <button class="chatbot-close-btn" id="chatbot-close">&times;</button>
-            </div>
-            
-            <div class="chat-messages-container" id="chat-messages">
-                <div class="chat-msg bot-msg">
-                    <div class="chat-avatar bot-avatar">🌱</div>
-                    <div class="chat-bubble">
-                        <p>Hello! I am your AI Agronomist. How can I help you grow today? Try asking about 'NPK', 'organic pest control', 'soil acidity', 'cotton', or 'delivery'.</p>
-                    </div>
+    <!-- Floating AI Chatbot Button & Container -->
+    <div class="chatbot-floating-btn" id="chatbot-toggle-btn" title="Ask Agro AI Assistant">
+        <span>💬</span>
+    </div>
+    <div class="chatbot-window" id="chatbot-window">
+        <div class="chatbot-header">
+            <div class="chat-title">
+                <span>🌱</span>
+                <div>
+                    <h4>Agro AI Assistant</h4>
+                    <span class="status">Online 24/7</span>
                 </div>
             </div>
-            
-            <div class="chat-quick-suggestions">
-                <div class="quick-replies">
-                    <span class="reply-pill">Cotton advice</span>
-                    <span class="reply-pill">Organic pest control</span>
-                    <span class="reply-pill">NPK fertilizers</span>
-                    <span class="reply-pill">Home delivery terms</span>
-                </div>
+            <button class="close-chat" id="close-chat-btn">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chat-messages">
+            <div class="chat-msg bot">
+                <p>Hello! I am your MD Agro assistant. How can I help you with crop seeds, fertilizers, or farm guidance today?</p>
             </div>
-            
-            <div class="chat-input-container">
-                <form id="chat-form">
-                    <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
-                    <button type="submit" class="chat-send-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
-                </form>
-            </div>
+        </div>
+        <div class="chatbot-input-row">
+            <input type="text" id="chat-input" placeholder="Type your farming question...">
+            <button id="send-chat-btn">Send</button>
         </div>
     </div>
 
-    <!-- Script file -->
     <script src="app.js"></script>
 </body>
 </html>

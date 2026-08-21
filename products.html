@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse MD Agro Services complete catalog of certified seeds, water-soluble NPK fertilizers, bio-pesticides, and farm tools.">
+    <title>Product Catalog | MD Agro Services</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sticky Navigation Header -->
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo-section">
+                <span class="logo-icon">🌱</span>
+                <div class="logo-text">
+                    <h1>MD AGRO</h1>
+                    <span>Services</span>
+                </div>
+            </a>
+            
+            <nav class="nav-links-wrapper" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="products.html" class="active">Products Catalog</a>
+                <a href="advisor.html">Crop Advisor</a>
+                <a href="services.html">Seasonal Guides</a>
+                <a href="contact.html">Contact Us</a>
+            </nav>
+            
+            <div class="header-actions">
+                <button class="cart-toggle-btn" id="cart-toggle" aria-label="Shopping Cart">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count-badge">0</span>
+                </button>
+                
+                <button class="hamburger-btn" id="nav-menu-btn" aria-label="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header Banner -->
+    <section class="page-banner">
+        <div class="container">
+            <h1>Agricultural Products Catalog</h1>
+            <p>Certified F1 Hybrid Seeds, Soluble Fertilizers, Biological Crop Defense & Precision Spray Equipment</p>
+            <div class="breadcrumb-nav">
+                <a href="index.html">Home</a>
+                <span>&rsaquo;</span>
+                <span>Products Catalog</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Catalog Main Section -->
+    <section class="section" id="catalog">
+        <div class="container">
+            <div class="catalog-controls">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-category="all">All Products</button>
+                    <button class="filter-btn" data-category="seeds">Hybrid Seeds</button>
+                    <button class="filter-btn" data-category="fertilizers">Fertilizers</button>
+                    <button class="filter-btn" data-category="protection">Crop Protection</button>
+                    <button class="filter-btn" data-category="tools">Tools & Sprayers</button>
+                </div>
+                
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="catalog-search" placeholder="Search seeds, fertilizers, pesticides...">
+                </div>
+            </div>
+            
+            <div class="products-grid" id="products-grid">
+                <!-- Products loaded dynamically via JavaScript with Real Photos -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <div class="logo-section light-logo">
+                    <span class="logo-icon">🌱</span>
+                    <div class="logo-text">
+                        <h3>MD AGRO</h3>
+                        <span>Services</span>
+                    </div>
+                </div>
+                <p>Empowering farming communities with science-backed agricultural products and expert agronomy consulting.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Product Catalog</a></li>
+                    <li><a href="advisor.html">AI Crop Advisor</a></li>
+                    <li><a href="services.html">Seasonal Guides</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="products.html">Certified Seeds</a></li>
+                    <li><a href="products.html">Soluble Fertilizers</a></li>
+                    <li><a href="products.html">Bio-Pesticides</a></li>
+                    <li><a href="products.html">Sprayers & Tools</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Farm Helpline</h4>
+                <p style="color:#a3e635; font-weight:bold; font-size:1.1rem; margin-bottom:8px;">📞 +91 98765 43210</p>
+                <p style="font-size:0.85rem;">Mon - Sat: 8:00 AM - 8:00 PM</p>
+                <p style="font-size:0.85rem; margin-top:8px;">Village Delivery Available</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Side Drawer -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h3>Shopping Cart (<span id="cart-total-count">0</span>)</h3>
+            <button class="close-btn" id="close-cart">&times;</button>
+        </div>
+        <div id="cart-drawer-content">
+            <div class="cart-items-wrapper" id="cart-items-container"></div>
+            <div class="cart-footer">
+                <div class="cart-summary">
+                    <span class="label">Total Amount:</span>
+                    <span class="value" id="cart-subtotal">₹0</span>
+                </div>
+                <div class="checkout-form-container">
+                    <h4>Quick Delivery Details</h4>
+                    <form id="checkout-form">
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Name" required id="chk-name">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="tel" placeholder="Mobile Number" required id="chk-phone">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Delivery Address" required id="chk-address">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="cart-checkout-btn" disabled>Confirm & Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Quick View Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <div id="product-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chatbot Button & Container -->
+    <div class="chatbot-floating-btn" id="chatbot-toggle-btn" title="Ask Agro AI Assistant">
+        <span>💬</span>
+    </div>
+    <div class="chatbot-window" id="chatbot-window">
+        <div class="chatbot-header">
+            <div class="chat-title">
+                <span>🌱</span>
+                <div>
+                    <h4>Agro AI Assistant</h4>
+                    <span class="status">Online 24/7</span>
+                </div>
+            </div>
+            <button class="close-chat" id="close-chat-btn">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chat-messages">
+            <div class="chat-msg bot">
+                <p>Hello! Need assistance picking the right seeds or fertilizer for your soil type? Ask me anything!</p>
+            </div>
+        </div>
+        <div class="chatbot-input-row">
+            <input type="text" id="chat-input" placeholder="Type your farming question...">
+            <button id="send-chat-btn">Send</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

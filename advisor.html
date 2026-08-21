@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Diagnose crop symptoms, yellowing leaves, pest attacks, and soil acidity with MD Agro Smart AI Crop Care Advisor.">
+    <title>Smart AI Crop Advisor | MD Agro Services</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sticky Navigation Header -->
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo-section">
+                <span class="logo-icon">🌱</span>
+                <div class="logo-text">
+                    <h1>MD AGRO</h1>
+                    <span>Services</span>
+                </div>
+            </a>
+            
+            <nav class="nav-links-wrapper" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="products.html">Products Catalog</a>
+                <a href="advisor.html" class="active">Crop Advisor</a>
+                <a href="services.html">Seasonal Guides</a>
+                <a href="contact.html">Contact Us</a>
+            </nav>
+            
+            <div class="header-actions">
+                <button class="cart-toggle-btn" id="cart-toggle" aria-label="Shopping Cart">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count-badge">0</span>
+                </button>
+                
+                <button class="hamburger-btn" id="nav-menu-btn" aria-label="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header Banner -->
+    <section class="page-banner">
+        <div class="container">
+            <h1>Smart AI Crop Care Advisor</h1>
+            <p>Select your crop type and leaf or soil symptoms for instant diagnostic recommendations and treatment protocols</p>
+            <div class="breadcrumb-nav">
+                <a href="index.html">Home</a>
+                <span>&rsaquo;</span>
+                <span>Crop Advisor</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Crop Care Advisor Main Section -->
+    <section class="section" id="advisor" style="background-color: #f0f4f2;">
+        <div class="container">
+            <div class="advisor-wrapper">
+                <div class="advisor-grid">
+                    <div class="advisor-header-inline">
+                        <h2>Agronomy Diagnostic System</h2>
+                        <p>Are your crops facing yellowing leaves, pests, or poor growth? Select your crop type and present symptom, and our agronomist system will instantly generate diagnostic advice and recommend targeted solutions.</p>
+                        
+                        <div class="advisor-form">
+                            <div class="form-group">
+                                <label for="advisory-crop">Cultivating Crop</label>
+                                <select id="advisory-crop" class="form-control">
+                                    <option value="cotton">Cotton (Kapas)</option>
+                                    <option value="wheat">Wheat (Gehun)</option>
+                                    <option value="paddy">Paddy / Rice (Dhan)</option>
+                                    <option value="vegetables">Vegetables (Tamatar/Mirch/Aloo)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="advisory-issue">Primary Soil or Leaf Symptom</label>
+                                <select id="advisory-issue" class="form-control">
+                                    <option value="deficiency">Yellowing Leaves / Stunted Growth (Nutrient Deficiency)</option>
+                                    <option value="pests">Visible Insect Pests / Leaf Sucking Bugs (Pest Attack)</option>
+                                    <option value="fungal">Leaf Spots / Powdery Coating / Root Rot (Fungal Infection)</option>
+                                    <option value="acidity">Sour / Hard Crusty Clay Soil (Soil Acidity)</option>
+                                    <option value="water">Dry Crumbling Cracks / Mud Waterlogging (Water Stress)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="advisory-output-panel" id="advisory-result">
+                        <!-- Content rendered dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agronomy Best Practices Info Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Diagnostic Soil & Foliar Protocols</h2>
+                <p>Simple preventative habits every farmer can practice to safeguard crop health.</p>
+            </div>
+            
+            <div class="highlights-grid">
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🧪</div>
+                    <h3>Early Soil Testing</h3>
+                    <p>Check soil pH and EC levels before sowing to avoid seedling stunt.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">💧</div>
+                    <h3>Targeted Foliar Spray</h3>
+                    <p>Apply liquid nutrients in early morning to maximize leaf pore absorption.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🦠</div>
+                    <h3>Seed Treatment</h3>
+                    <p>Coat seeds with bio-pesticide or bio-fungicide to block soil pathogens.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🔄</div>
+                    <h3>Crop Rotation</h3>
+                    <p>Rotate legumes with cereals to break pest cycles and replenish nitrogen naturally.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <div class="logo-section light-logo">
+                    <span class="logo-icon">🌱</span>
+                    <div class="logo-text">
+                        <h3>MD AGRO</h3>
+                        <span>Services</span>
+                    </div>
+                </div>
+                <p>Empowering farming communities with science-backed agricultural products and expert agronomy consulting.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Product Catalog</a></li>
+                    <li><a href="advisor.html">AI Crop Advisor</a></li>
+                    <li><a href="services.html">Seasonal Guides</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="products.html">Certified Seeds</a></li>
+                    <li><a href="products.html">Soluble Fertilizers</a></li>
+                    <li><a href="products.html">Bio-Pesticides</a></li>
+                    <li><a href="products.html">Sprayers & Tools</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Farm Helpline</h4>
+                <p style="color:#a3e635; font-weight:bold; font-size:1.1rem; margin-bottom:8px;">📞 +91 98765 43210</p>
+                <p style="font-size:0.85rem;">Mon - Sat: 8:00 AM - 8:00 PM</p>
+                <p style="font-size:0.85rem; margin-top:8px;">Village Delivery Available</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Side Drawer -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h3>Shopping Cart (<span id="cart-total-count">0</span>)</h3>
+            <button class="close-btn" id="close-cart">&times;</button>
+        </div>
+        <div id="cart-drawer-content">
+            <div class="cart-items-wrapper" id="cart-items-container"></div>
+            <div class="cart-footer">
+                <div class="cart-summary">
+                    <span class="label">Total Amount:</span>
+                    <span class="value" id="cart-subtotal">₹0</span>
+                </div>
+                <div class="checkout-form-container">
+                    <h4>Quick Delivery Details</h4>
+                    <form id="checkout-form">
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Name" required id="chk-name">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="tel" placeholder="Mobile Number" required id="chk-phone">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Delivery Address" required id="chk-address">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="cart-checkout-btn" disabled>Confirm & Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Quick View Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <div id="product-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chatbot Button & Container -->
+    <div class="chatbot-floating-btn" id="chatbot-toggle-btn" title="Ask Agro AI Assistant">
+        <span>💬</span>
+    </div>
+    <div class="chatbot-window" id="chatbot-window">
+        <div class="chatbot-header">
+            <div class="chat-title">
+                <span>🌱</span>
+                <div>
+                    <h4>Agro AI Assistant</h4>
+                    <span class="status">Online 24/7</span>
+                </div>
+            </div>
+            <button class="close-chat" id="close-chat-btn">&times;</button>
+        </div>
+        <div class="chatbot-messages" id="chat-messages">
+            <div class="chat-msg bot">
+                <p>Hello! Describe your crop symptom to me, or ask how to manage soil acidity!</p>
+            </div>
+        </div>
+        <div class="chatbot-input-row">
+            <input type="text" id="chat-input" placeholder="Type your farming question...">
+            <button id="send-chat-btn">Send</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
