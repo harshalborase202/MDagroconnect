@@ -270,29 +270,50 @@
         </div>
     </div>
 
-    <!-- Floating AI Chatbot Button & Container -->
-    <div class="chatbot-floating-btn" id="chatbot-toggle-btn" title="Ask Agro AI Assistant">
-        <span>💬</span>
-    </div>
-    <div class="chatbot-window" id="chatbot-window">
-        <div class="chatbot-header">
-            <div class="chat-title">
-                <span>🌱</span>
-                <div>
-                    <h4>Agro AI Assistant</h4>
-                    <span class="status">Online 24/7</span>
+    <!-- Floating AI Chatbot Widget -->
+    <div class="chatbot-widget-wrapper">
+        <button class="chatbot-toggle-btn" id="chatbot-toggle" title="Ask Agro AI Assistant" aria-label="Open AI Chatbot">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+        
+        <div class="chatbot-widget-container" id="chatbot-container">
+            <div class="chatbot-header">
+                <div class="bot-info">
+                    <div class="bot-avatar-main">🌱</div>
+                    <div class="bot-text">
+                        <h4>Agro AI Assistant</h4>
+                        <span class="bot-status">Online 24/7</span>
+                    </div>
+                </div>
+                <button class="chatbot-close-btn" id="chatbot-close" aria-label="Close Chat">&times;</button>
+            </div>
+            
+            <div class="chatbot-messages" id="chat-messages">
+                <div class="chat-msg bot-msg">
+                    <div class="chat-avatar bot-avatar">🌱</div>
+                    <div class="chat-bubble">
+                        <p>Hello! Have a question about a bulk order or regional store location? Ask me!</p>
+                    </div>
                 </div>
             </div>
-            <button class="close-chat" id="close-chat-btn">&times;</button>
-        </div>
-        <div class="chatbot-messages" id="chat-messages">
-            <div class="chat-msg bot">
-                <p>Hello! Have a question about a bulk order or regional store location? Ask me!</p>
+            
+            <div class="quick-replies">
+                <button class="reply-pill">Cotton Care</button>
+                <button class="reply-pill">Best Fertilizer</button>
+                <button class="reply-pill">Delivery Time</button>
             </div>
-        </div>
-        <div class="chatbot-input-row">
-            <input type="text" id="chat-input" placeholder="Type your farming question...">
-            <button id="send-chat-btn">Send</button>
+            
+            <form id="chat-form" class="chatbot-input-form">
+                <input type="text" id="chat-input" placeholder="Ask a farming question..." required autocomplete="off">
+                <button type="submit" class="send-btn" aria-label="Send Message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
         </div>
     </div>
 
