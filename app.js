@@ -326,188 +326,94 @@ function initApp() {
     initChatbot(); // Initialize AI chatbot
 }
 
-// Get SVG Graphic based on identifier
-function getProductSVG(imageName) {
-    // Generate inline, vector illustrations for products to make them look highly professional and premium
-    const colors = {
-        seeds: { primary: '#4caf50', accent: '#81c784', dark: '#1b5e20' },
-        fertilizers: { primary: '#8d6e63', accent: '#d7ccc8', dark: '#4e342e' },
-        protection: { primary: '#0288d1', accent: '#b3e5fc', dark: '#01579b' },
-        tools: { primary: '#78909c', accent: '#cfd8dc', dark: '#263238' }
-    };
-
-    switch(imageName) {
-        case 'cotton-seed':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#f1f8e9" rx="12"/>
-                <circle cx="50" cy="50" r="30" fill="#fff" opacity="0.6"/>
-                <path d="M50 25 C65 30 75 45 70 60 C65 75 50 80 50 80 C50 80 35 75 30 60 C25 45 35 30 50 25 Z" fill="#e0f2f1" stroke="#26a69a" stroke-width="2"/>
-                <path d="M50 35 C58 38 64 45 62 55 C60 65 50 72 50 72 C50 72 40 65 38 55 C36 45 42 38 50 35 Z" fill="#ffffff" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.1))"/>
-                <path d="M50 72 L50 85" stroke="#26a69a" stroke-width="3" stroke-linecap="round"/>
-                <path d="M50 85 C45 87 40 85 36 82" stroke="#26a69a" stroke-width="2" fill="none" stroke-linecap="round"/>
-                <circle cx="45" cy="45" r="3" fill="#80cbc4"/>
-                <circle cx="55" cy="47" r="4" fill="#b2dfdb"/>
-                <circle cx="48" cy="58" r="5" fill="#e0f2f1"/>
-            </svg>`;
-        case 'wheat-seed':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#fff8e1" rx="12"/>
-                <path d="M50 85 L50 15" stroke="#ffa000" stroke-width="3" stroke-linecap="round"/>
-                <path d="M50 20 C42 22 40 28 50 32 C60 28 58 22 50 20 Z" fill="#ffe082" stroke="#ffb300" stroke-width="1.5"/>
-                <path d="M50 32 C40 34 38 40 50 44 C60 40 58 34 50 32 Z" fill="#ffe082" stroke="#ffb300" stroke-width="1.5"/>
-                <path d="M50 44 C40 46 38 52 50 56 C60 52 58 46 50 44 Z" fill="#ffd54f" stroke="#ffb300" stroke-width="1.5"/>
-                <path d="M50 56 C40 58 38 64 50 68 C60 64 58 58 50 56 Z" fill="#ffd54f" stroke="#ffb300" stroke-width="1.5"/>
-                <path d="M50 68 C40 70 38 76 50 80 C60 76 58 70 50 68 Z" fill="#ffca28" stroke="#ffa000" stroke-width="1.5"/>
-                <path d="M50 15 L50 8" stroke="#ffa000" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M43 18 L35 12" stroke="#ffa000" stroke-width="1" stroke-linecap="round"/>
-                <path d="M57 18 L65 12" stroke="#ffa000" stroke-width="1" stroke-linecap="round"/>
-                <path d="M41 30 L30 25" stroke="#ffa000" stroke-width="1" stroke-linecap="round"/>
-                <path d="M59 30 L70 25" stroke="#ffa000" stroke-width="1" stroke-linecap="round"/>
-            </svg>`;
-        case 'corn-seed':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#fffde7" rx="12"/>
-                <path d="M50 80 C65 80 65 30 50 20 C35 30 35 80 50 80 Z" fill="#fbc02d" stroke="#f57f17" stroke-width="2"/>
-                <path d="M38 75 C30 65 32 40 42 30" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/>
-                <path d="M62 75 C70 65 68 40 58 30" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/>
-                <circle cx="47" cy="35" r="3" fill="#fff59d"/>
-                <circle cx="53" cy="35" r="3" fill="#fff59d"/>
-                <circle cx="45" cy="45" r="4" fill="#ffee58"/>
-                <circle cx="55" cy="45" r="4" fill="#ffee58"/>
-                <circle cx="44" cy="55" r="4" fill="#fdd835"/>
-                <circle cx="56" cy="55" r="4" fill="#fdd835"/>
-                <circle cx="45" cy="65" r="5" fill="#fbc02d"/>
-                <circle cx="55" cy="65" r="5" fill="#fbc02d"/>
-            </svg>`;
-        case 'paddy-seed':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#efebe9" rx="12"/>
-                <path d="M20 85 C35 75 45 40 45 15" fill="none" stroke="#81c784" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M80 85 C65 75 55 35 55 20" fill="none" stroke="#81c784" stroke-width="2" stroke-linecap="round"/>
-                <path d="M45 15 C41 18 36 28 42 32 C48 28 48 18 45 15 Z" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
-                <path d="M55 20 C52 23 48 31 53 35 C58 31 58 23 55 20 Z" fill="#c8e6c9" stroke="#4caf50" stroke-width="1"/>
-                <path d="M38 35 C32 37 28 45 35 48 C41 45 40 37 38 35 Z" fill="#e8f5e9" stroke="#4caf50" stroke-width="1"/>
-                <path d="M60 40 C56 42 53 48 58 52 C63 48 62 42 60 40 Z" fill="#e8f5e9" stroke="#4caf50" stroke-width="1"/>
-            </svg>`;
-        case 'vermicompost':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#efebe9" rx="12"/>
-                <path d="M25 80 L75 80 L80 40 L20 40 Z" fill="#5d4037" stroke="#3e2723" stroke-width="3" stroke-linejoin="round"/>
-                <ellipse cx="50" cy="40" rx="30" ry="10" fill="#8d6e63" stroke="#3e2723" stroke-width="3"/>
-                <path d="M30 40 C35 30 40 32 50 35 C60 32 65 30 70 40" fill="none" stroke="#d7ccc8" stroke-width="2" stroke-linecap="round"/>
-                <path d="M35 55 C45 52 50 62 65 58" fill="none" stroke="#ff8a80" stroke-width="3" stroke-linecap="round"/>
-                <circle cx="45" cy="48" r="2" fill="#3e2723"/>
-                <circle cx="58" cy="68" r="3" fill="#3e2723"/>
-                <circle cx="32" cy="65" r="2" fill="#3e2723"/>
-            </svg>`;
-        case 'npk':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#e0f2f1" rx="12"/>
-                <path d="M30 25 L70 25 L80 85 L20 85 Z" fill="#ffffff" stroke="#00796b" stroke-width="3" stroke-linejoin="round"/>
-                <rect x="35" y="35" width="30" height="22" rx="4" fill="#e0f2f1"/>
-                <text x="50" y="48" fill="#004d40" font-weight="bold" font-size="10" text-anchor="middle">NPK</text>
-                <text x="50" y="55" fill="#00796b" font-weight="bold" font-size="7" text-anchor="middle">19:19:19</text>
-                <circle cx="30" cy="72" r="3" fill="#ffb74d"/>
-                <circle cx="50" cy="74" r="3" fill="#4db6ac"/>
-                <circle cx="70" cy="71" r="3" fill="#ff8a65"/>
-            </svg>`;
-        case 'liquid-booster':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#f1f8e9" rx="12"/>
-                <path d="M40 20 L60 20 L60 30 L70 38 L70 85 L30 85 L30 38 L40 30 Z" fill="#ffffff" stroke="#2e7d32" stroke-width="3" stroke-linejoin="round"/>
-                <rect x="42" y="14" width="16" height="6" fill="#1b5e20"/>
-                <rect x="30" y="48" width="40" height="20" fill="#81c784"/>
-                <path d="M40 58 C45 55 55 61 60 58" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="50" cy="75" r="4" fill="#a5d6a7"/>
-                <circle cx="62" cy="78" r="2.5" fill="#a5d6a7"/>
-            </svg>`;
-        case 'micronutrient':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#f9f9f9" rx="12"/>
-                <path d="M25 30 L75 30 L82 85 L18 85 Z" fill="#eceff1" stroke="#37474f" stroke-width="3" stroke-linejoin="round"/>
-                <circle cx="35" cy="50" r="5" fill="#ff7043"/>
-                <circle cx="50" cy="45" r="6" fill="#29b6f6"/>
-                <circle cx="65" cy="52" r="4" fill="#26a69a"/>
-                <circle cx="42" cy="68" r="5" fill="#ab47bc"/>
-                <circle cx="58" cy="65" r="5" fill="#ffca28"/>
-                <text x="50" y="80" fill="#37474f" font-weight="bold" font-size="7" text-anchor="middle">MICROS</text>
-            </svg>`;
-        case 'neem-shield':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#e8f5e9" rx="12"/>
-                <path d="M35 25 L65 25 L65 35 L72 42 L72 85 L28 85 L28 42 L35 35 Z" fill="#e8f5e9" stroke="#1b5e20" stroke-width="3" stroke-linejoin="round"/>
-                <ellipse cx="50" cy="18" rx="12" ry="4" fill="#388e3c"/>
-                <path d="M50 45 C40 50 40 70 50 80 C60 70 60 50 50 45 Z" fill="#81c784" stroke="#1b5e20" stroke-width="1.5"/>
-                <path d="M50 45 L50 80" stroke="#1b5e20" stroke-width="1.5"/>
-                <path d="M50 55 C46 54 44 51 44 51" stroke="#1b5e20" stroke-width="1.5" fill="none"/>
-                <path d="M50 63 C55 62 57 59 57 59" stroke="#1b5e20" stroke-width="1.5" fill="none"/>
-            </svg>`;
-        case 'fungicide':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#e1f5fe" rx="12"/>
-                <path d="M38 20 H62 V30 L75 42 V85 H25 V42 L38 30 Z" fill="#ffffff" stroke="#0277bd" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M50 48 L62 58 H38 Z" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
-                <circle cx="50" cy="68" r="8" fill="#4fc3f7" opacity="0.7"/>
-                <path d="M45 68 H55 M50 63 V73" stroke="#01579b" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>`;
-        case 'herbicide':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#ede7f6" rx="12"/>
-                <path d="M35 15 H65 V28 L72 38 V85 H28 V38 L35 28 Z" fill="#ffffff" stroke="#5e35b1" stroke-width="3"/>
-                <rect x="38" y="45" width="24" height="28" fill="#b39ddb"/>
-                <path d="M38 52 H62 M38 64 H62" stroke="#5e35b1" stroke-width="1.5"/>
-                <circle cx="50" cy="33" r="3.5" fill="#d1c4e9"/>
-            </svg>`;
-        case 'trowel':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#eceff1" rx="12"/>
-                <path d="M50 18 L70 48 H58 L58 75 C58 78 54 82 50 82 C46 82 42 78 42 75 L42 48 H30 Z" fill="#78909c" stroke="#37474f" stroke-width="3" stroke-linejoin="round"/>
-                <rect x="44" y="58" width="12" height="22" rx="3" fill="#d84315"/>
-                <line x1="50" y1="18" x2="50" y2="48" stroke="#37474f" stroke-width="1.5"/>
-            </svg>`;
-        case 'sprayer':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#e8f5e9" rx="12"/>
-                <rect x="32" y="25" width="36" height="52" rx="8" fill="#2e7d32" stroke="#1b5e20" stroke-width="3"/>
-                <rect x="42" y="16" width="16" height="9" fill="#37474f"/>
-                <path d="M68 50 L85 50 L85 20 L80 20" fill="none" stroke="#558b2f" stroke-width="3" stroke-linecap="round"/>
-                <rect x="36" y="66" width="28" height="7" fill="#1b5e20"/>
-                <circle cx="40" cy="38" r="3.5" fill="#a5d6a7"/>
-                <circle cx="60" cy="38" r="3.5" fill="#a5d6a7"/>
-            </svg>`;
-        case 'ph-meter':
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#fafafa" rx="12"/>
-                <path d="M42 85 L42 55 H58 L58 85" stroke="#78909c" stroke-width="3" stroke-linecap="round"/>
-                <rect x="30" y="20" width="40" height="35" rx="6" fill="#37474f" stroke="#263238" stroke-width="3"/>
-                <rect x="36" y="26" width="28" height="15" fill="#9e9e9e"/>
-                <line x1="50" y1="38" x2="44" y2="29" stroke="#b71c1c" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="50" cy="38" r="2" fill="#000"/>
-                <circle cx="42" cy="48" r="2.5" fill="#4caf50"/>
-                <circle cx="50" cy="48" r="2.5" fill="#ffeb3b"/>
-                <circle cx="58" cy="48" r="2.5" fill="#f44336"/>
-            </svg>`;
-        default:
-            return `
-            <svg class="product-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#e8f5e9" rx="12"/>
-                <circle cx="50" cy="50" r="20" fill="#81c784"/>
-            </svg>`;
+// Real Photographic Product Images Database (High-Res Realistic Agricultural Photos)
+const PRODUCT_IMAGES = {
+    'cotton-seed': {
+        local: 'assets/images/cotton-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real high yield hybrid cotton crop'
+    },
+    'wheat-seed': {
+        local: 'assets/images/wheat-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real golden wheat harvest seeds and ears'
+    },
+    'corn-seed': {
+        local: 'assets/images/corn-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real sweet hybrid F1 corn'
+    },
+    'paddy-seed': {
+        local: 'assets/images/paddy-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real agricultural rice paddy grains'
+    },
+    'vermicompost': {
+        local: 'assets/images/vermicompost.jpg',
+        fallback: 'https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real organic dark vermicompost enriched soil'
+    },
+    'npk': {
+        local: 'assets/images/npk.jpg',
+        fallback: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real NPK water-soluble fertilizer nutrients'
+    },
+    'liquid-booster': {
+        local: 'assets/images/liquid-booster.jpg',
+        fallback: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real liquid crop booster nutrition bottle'
+    },
+    'micronutrient': {
+        local: 'assets/images/micronutrient.jpg',
+        fallback: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real soil micronutrient minerals mixture'
+    },
+    'neem-shield': {
+        local: 'assets/images/neem-shield.jpg',
+        fallback: 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real bio-pesticide neem shield botanical oil'
+    },
+    'fungicide': {
+        local: 'assets/images/fungicide.jpg',
+        fallback: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real broad-spectrum agricultural fungicide'
+    },
+    'herbicide': {
+        local: 'assets/images/herbicide.jpg',
+        fallback: 'https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real selective agricultural weed herbicide'
+    },
+    'trowel': {
+        local: 'assets/images/trowel.jpg',
+        fallback: 'https://images.unsplash.com/photo-1617576683096-00fc8eecb3af?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real ergonomic aluminum hand trowel in soil'
+    },
+    'sprayer': {
+        local: 'assets/images/sprayer.jpg',
+        fallback: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real battery-operated knapsack sprayer'
+    },
+    'ph-meter': {
+        local: 'assets/images/ph-meter.jpg',
+        fallback: 'https://images.unsplash.com/photo-1585314062604-1a357de8b000?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real 3-in-1 soil moisture and pH tester device'
     }
+};
+
+// Generate high quality real photographic image HTML with automated CDN fallback
+function getProductImage(imageName, customAlt = '') {
+    const item = PRODUCT_IMAGES[imageName] || {
+        local: 'assets/images/cotton-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80',
+        alt: 'Agricultural product'
+    };
+    const altText = (customAlt || item.alt).replace(/"/g, '&quot;');
+    return `<img src="${item.local}" data-fallback="${item.fallback}" onerror="if(this.src!=='${item.fallback}'){this.src='${item.fallback}';}" alt="${altText}" class="product-img" loading="lazy">`;
+}
+
+// Backward compatibility helper
+function getProductSVG(imageName) {
+    return getProductImage(imageName);
 }
 
 // Render Products Catalog
