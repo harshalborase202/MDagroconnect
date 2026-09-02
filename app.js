@@ -309,7 +309,7 @@ const ADVISORY_DATABASE = {
 const API_BASE = 'http://localhost:3001/api';
 
 // Application State
-let cart = [];
+let cart = JSON.parse(localStorage.getItem('md_cart') || '[]');
 let activeCategory = 'all';
 let searchQuery = '';
 
@@ -320,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initApp() {
     renderProducts();
+    renderFeaturedProducts();
     setupEventListeners();
     updateCartUI();
     renderAdvisoryResult(); // Run initial advice render
@@ -329,92 +330,173 @@ function initApp() {
 // Real Photographic Product Images Database (High-Res Realistic Agricultural Photos)
 const PRODUCT_IMAGES = {
     'cotton-seed': {
-        local: 'assets/images/cotton-seed.jpg',
+        local: 'images/cotton-seed.jpg',
         fallback: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80',
         alt: 'Real high yield hybrid cotton crop'
     },
     'wheat-seed': {
-        local: 'assets/images/wheat-seed.jpg',
+        local: 'images/wheat-seed.jpg',
         fallback: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
         alt: 'Real golden wheat harvest seeds and ears'
     },
     'corn-seed': {
-        local: 'assets/images/corn-seed.jpg',
+        local: 'images/corn-seed.jpg',
         fallback: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80',
         alt: 'Real sweet hybrid F1 corn'
     },
     'paddy-seed': {
-        local: 'assets/images/paddy-seed.jpg',
+        local: 'images/paddy-seed.jpg',
         fallback: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&q=80',
         alt: 'Real agricultural rice paddy grains'
     },
     'vermicompost': {
-        local: 'assets/images/vermicompost.jpg',
+        local: 'images/vermicompost.jpg',
         fallback: 'https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?auto=format&fit=crop&w=800&q=80',
         alt: 'Real organic dark vermicompost enriched soil'
     },
     'npk': {
-        local: 'assets/images/npk.jpg',
+        local: 'images/npk.jpg',
         fallback: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=800&q=80',
         alt: 'Real NPK water-soluble fertilizer nutrients'
     },
     'liquid-booster': {
-        local: 'assets/images/liquid-booster.jpg',
+        local: 'images/liquid-booster.jpg',
         fallback: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80',
         alt: 'Real liquid crop booster nutrition bottle'
     },
     'micronutrient': {
-        local: 'assets/images/micronutrient.jpg',
+        local: 'images/micronutrient.jpg',
         fallback: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80',
         alt: 'Real soil micronutrient minerals mixture'
     },
     'neem-shield': {
-        local: 'assets/images/neem-shield.jpg',
+        local: 'images/neem-shield.jpg',
         fallback: 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80',
         alt: 'Real bio-pesticide neem shield botanical oil'
     },
     'fungicide': {
-        local: 'assets/images/fungicide.jpg',
+        local: 'images/fungicide.jpg',
         fallback: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
         alt: 'Real broad-spectrum agricultural fungicide'
     },
     'herbicide': {
-        local: 'assets/images/herbicide.jpg',
+        local: 'images/herbicide.jpg',
         fallback: 'https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&w=800&q=80',
         alt: 'Real selective agricultural weed herbicide'
     },
     'trowel': {
-        local: 'assets/images/trowel.jpg',
+        local: 'images/trowel.jpg',
         fallback: 'https://images.unsplash.com/photo-1617576683096-00fc8eecb3af?auto=format&fit=crop&w=800&q=80',
         alt: 'Real ergonomic aluminum hand trowel in soil'
     },
     'sprayer': {
-        local: 'assets/images/sprayer.jpg',
+        local: 'images/sprayer.jpg',
         fallback: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&w=800&q=80',
         alt: 'Real battery-operated knapsack sprayer'
     },
     'ph-meter': {
-        local: 'assets/images/ph-meter.jpg',
+        local: 'images/ph-meter.jpg',
         fallback: 'https://images.unsplash.com/photo-1585314062604-1a357de8b000?auto=format&fit=crop&w=800&q=80',
         alt: 'Real 3-in-1 soil moisture and pH tester device'
     }
 };
 
-// Generate high quality real photographic image HTML with automated CDN fallback
-function getProductImage(imageName, customAlt = '') {
+// Get Real Product Image with fallback and optional product name tag badge
+function getProductSVG(imageName, productName = '', showNameTag = true) {
+    if (!productName) {
+        const found = PRODUCTS.find(p => p.image === imageName);
+        if (found) productName = found.name;
+    }
+
     const item = PRODUCT_IMAGES[imageName] || {
-        local: 'assets/images/cotton-seed.jpg',
-        fallback: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80',
-        alt: 'Agricultural product'
+        local: `images/${imageName}.jpg`,
+        fallback: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=500&auto=format&fit=crop&q=80',
+        alt: productName || imageName
     };
-    const altText = (customAlt || item.alt).replace(/"/g, '&quot;');
-    return `<img src="${item.local}" data-fallback="${item.fallback}" onerror="if(this.src!=='${item.fallback}'){this.src='${item.fallback}';}" alt="${altText}" class="product-img" loading="lazy">`;
+
+    const nameBadgeHTML = (showNameTag && productName) 
+        ? `<div class="product-img-name-tag"><span>${productName}</span></div>` 
+        : '';
+
+    return `
+        <div class="real-product-image-wrap">
+            <img src="${item.local}" 
+                 alt="${productName || item.alt}" 
+                 class="real-product-img product-img" 
+                 loading="lazy" 
+                 onerror="if(this.src!=='${item.fallback}'){this.src='${item.fallback}';}" />
+            ${nameBadgeHTML}
+        </div>
+    `;
 }
 
-// Backward compatibility helper
-function getProductSVG(imageName) {
-    return getProductImage(imageName);
+function getProductImage(imageName, customAlt = '') {
+    return getProductSVG(imageName, customAlt, false);
 }
+}
+
+// Render Featured Products (Home Page Preview - 4 Items)
+function renderFeaturedProducts() {
+    const grid = document.getElementById('featured-products-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const featured = PRODUCTS.slice(0, 4);
+    featured.forEach(product => {
+        const card = createProductCardElement(product);
+        grid.appendChild(card);
+    });
+}
+
+// Helper to create product card element
+function createProductCardElement(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card fade-in';
+    card.setAttribute('data-id', product.id);
+
+    const tagsHTML = product.tags.map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
+
+    card.innerHTML = `
+        <div class="product-image-container">
+            ${getProductSVG(product.image, product.name, true)}
+            <div class="product-card-overlay">
+                <button class="btn btn-icon btn-view-details" title="Quick View">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="product-info">
+            <div class="product-rating">
+                <div class="stars">
+                    ${renderStars(product.rating)}
+                </div>
+                <span class="rating-val">${product.rating} (${product.reviews})</span>
+            </div>
+            <h3 class="product-name">${product.name}</h3>
+            <p class="product-desc-short">${product.description.substring(0, 75)}...</p>
+            <div class="product-tags-row">${tagsHTML}</div>
+            <div class="product-footer-row">
+                <div class="product-price">
+                    <span class="currency">₹</span>
+                    <span class="amount">${product.price}</span>
+                    <span class="unit">/${product.unit.replace('per ', '')}</span>
+                </div>
+                <button class="btn btn-primary btn-add-to-cart" data-id="${product.id}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg> Add
+                </button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
 
 // Render Products Catalog
 function renderProducts() {
@@ -455,7 +537,7 @@ function renderProducts() {
 
         card.innerHTML = `
             <div class="product-image-container">
-                ${getProductSVG(product.image)}
+                ${getProductSVG(product.image, product.name, true)}
                 <div class="product-card-overlay">
                     <button class="btn btn-icon btn-view-details" title="Quick View">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -803,6 +885,10 @@ function removeFromCart(id) {
 
 // Update Cart UI
 function updateCartUI() {
+    try {
+        localStorage.setItem('md_cart', JSON.stringify(cart));
+    } catch(e) {}
+
     const container = document.getElementById('cart-items-container');
     const totalCountElem = document.getElementById('cart-total-count');
     const subtotalElem = document.getElementById('cart-subtotal');
