@@ -414,8 +414,8 @@ function getProductSVG(imageName, productName = '', showNameTag = true) {
         alt: productName || imageName
     };
 
-    const nameBadgeHTML = (showNameTag && productName) 
-        ? `<div class="product-img-name-tag"><span>${productName}</span></div>` 
+    const nameBadgeHTML = (showNameTag && productName)
+        ? `<div class="product-img-name-tag"><span>${productName}</span></div>`
         : '';
 
     return `
@@ -433,7 +433,7 @@ function getProductSVG(imageName, productName = '', showNameTag = true) {
 function getProductImage(imageName, customAlt = '') {
     return getProductSVG(imageName, customAlt, false);
 }
-}
+
 
 // Render Featured Products (Home Page Preview - 4 Items)
 function renderFeaturedProducts() {
@@ -509,8 +509,8 @@ function renderProducts() {
     const filtered = PRODUCTS.filter(p => {
         const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
         const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+            p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesCategory && matchesSearch;
     });
 
@@ -695,7 +695,7 @@ function setupEventListeners() {
         return () => {
             clearTimeout(timer);
             timer = setTimeout(() => {
-                const crop  = document.getElementById('advisory-crop')?.value;
+                const crop = document.getElementById('advisory-crop')?.value;
                 const issue = document.getElementById('advisory-issue')?.value;
                 if (crop && issue) {
                     fetch(`${API_BASE}/advisory/log`, {
@@ -745,16 +745,16 @@ function setupEventListeners() {
                     <path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path>
                 </svg> Sending...`;
 
-            const name    = contactForm.querySelector('#contact-name')?.value  || contactForm.querySelector('[name="name"]')?.value  || '';
-            const email   = contactForm.querySelector('#contact-email')?.value || contactForm.querySelector('[name="email"]')?.value || '';
-            const phone   = contactForm.querySelector('#contact-phone')?.value || contactForm.querySelector('[name="phone"]')?.value || '';
-            const message = contactForm.querySelector('#contact-msg')?.value   || contactForm.querySelector('[name="message"]')?.value || contactForm.querySelector('textarea')?.value || '';
+            const name = contactForm.querySelector('#contact-name')?.value || contactForm.querySelector('[name="name"]')?.value || '';
+            const email = contactForm.querySelector('#contact-email')?.value || contactForm.querySelector('[name="email"]')?.value || '';
+            const phone = contactForm.querySelector('#contact-phone')?.value || contactForm.querySelector('[name="phone"]')?.value || '';
+            const message = contactForm.querySelector('#contact-msg')?.value || contactForm.querySelector('[name="message"]')?.value || contactForm.querySelector('textarea')?.value || '';
 
             try {
-                const res  = await fetch(`${API_BASE}/contact`, {
-                    method:  'POST',
+                const res = await fetch(`${API_BASE}/contact`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ name, email, phone, message }),
+                    body: JSON.stringify({ name, email, phone, message }),
                 });
                 const data = await res.json();
 
@@ -770,13 +770,13 @@ function setupEventListeners() {
                             <p>${data.message}</p>
                         </div>`;
                 } else {
-                    submitBtn.disabled  = false;
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHTML;
                     const errMsg = data.errors ? data.errors.map(e => e.msg).join(' ') : (data.message || 'Failed to send. Please try again.');
                     showToast('⚠ ' + errMsg);
                 }
             } catch (err) {
-                submitBtn.disabled  = false;
+                submitBtn.disabled = false;
                 submitBtn.innerHTML = originalHTML;
                 showToast('⚠ Could not reach the server. Please check your connection.');
             }
@@ -807,7 +807,7 @@ function setupEventListeners() {
         newsletterForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('newsletter-email');
-            const submitBtn  = newsletterForm.querySelector('button[type="submit"]');
+            const submitBtn = newsletterForm.querySelector('button[type="submit"]');
             const email = emailInput?.value.trim();
             if (!email) return;
 
@@ -816,10 +816,10 @@ function setupEventListeners() {
             submitBtn.textContent = '...';
 
             try {
-                const res  = await fetch(`${API_BASE}/newsletter/subscribe`, {
-                    method:  'POST',
+                const res = await fetch(`${API_BASE}/newsletter/subscribe`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ email }),
+                    body: JSON.stringify({ email }),
                 });
                 const data = await res.json();
                 showToast(data.success ? '✅ ' + data.message : '⚠ ' + (data.message || 'Subscription failed.'));
@@ -827,7 +827,7 @@ function setupEventListeners() {
             } catch {
                 showToast('⚠ Could not reach server. Please try again.');
             } finally {
-                submitBtn.disabled  = false;
+                submitBtn.disabled = false;
                 submitBtn.innerHTML = orig;
             }
         });
@@ -847,7 +847,7 @@ function addToCart(productId) {
     }
 
     updateCartUI();
-    
+
     // Add micro-animation effect to Cart count in Navbar
     const badge = document.querySelector('.cart-count-badge');
     if (badge) {
@@ -887,7 +887,7 @@ function removeFromCart(id) {
 function updateCartUI() {
     try {
         localStorage.setItem('md_cart', JSON.stringify(cart));
-    } catch(e) {}
+    } catch (e) { }
 
     const container = document.getElementById('cart-items-container');
     const totalCountElem = document.getElementById('cart-total-count');
@@ -966,8 +966,8 @@ function updateCartUI() {
 
 // Process Checkout Simulation
 async function processCheckout() {
-    const name    = document.getElementById('chk-name')?.value.trim()    || '';
-    const phone   = document.getElementById('chk-phone')?.value.trim()   || '';
+    const name = document.getElementById('chk-name')?.value.trim() || '';
+    const phone = document.getElementById('chk-phone')?.value.trim() || '';
     const address = document.getElementById('chk-address')?.value.trim() || '';
 
     if (!name || !phone || !address) {
@@ -978,20 +978,20 @@ async function processCheckout() {
     const checkoutBtn = document.getElementById('cart-checkout-btn');
     const origBtnText = checkoutBtn ? checkoutBtn.innerHTML : '';
     if (checkoutBtn) {
-        checkoutBtn.disabled  = true;
+        checkoutBtn.disabled = true;
         checkoutBtn.innerHTML = `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path></svg> Placing Order...`;
     }
 
     const items = cart.map(item => ({
         productId: item.product.id,
-        quantity:  item.quantity,
+        quantity: item.quantity,
     }));
 
     try {
-        const res  = await fetch(`${API_BASE}/orders`, {
-            method:  'POST',
+        const res = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ customerName: name, phone, address, items }),
+            body: JSON.stringify({ customerName: name, phone, address, items }),
         });
         const data = await res.json();
 
@@ -1285,7 +1285,7 @@ function initChatbot() {
     function sendMessage(text) {
         // User Message
         appendMessage('user', text);
-        
+
         // Show Typing Indicator
         const typingId = showTypingIndicator();
 
@@ -1300,9 +1300,9 @@ function initChatbot() {
     function appendMessage(sender, text) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${sender}-msg fade-in`;
-        
-        const avatar = sender === 'bot' ? 
-            `<div class="chat-avatar bot-avatar">🌱</div>` : 
+
+        const avatar = sender === 'bot' ?
+            `<div class="chat-avatar bot-avatar">🌱</div>` :
             `<div class="chat-avatar user-avatar">👤</div>`;
 
         msgDiv.innerHTML = `
@@ -1342,7 +1342,7 @@ function initChatbot() {
 
     function getAIResponse(query) {
         const q = query.toLowerCase();
-        
+
         // Match response
         if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('start') || q.includes('help')) {
             return "Hello there! I am your MD Agro AI assistant. I can advise you on crops, fertilizer needs, or pest management. What crop are you cultivating today?";
@@ -1369,9 +1369,9 @@ function initChatbot() {
             return "MD Agro Services offers cash on delivery and home delivery for farmers. Once you place an order in the cart, our team contacts you to verify the location and deliver within 24-48 hours.";
         }
         if (q.includes('location') || q.includes('contact') || q.includes('phone') || q.includes('address')) {
-            return "Our primary shop is located at main market yard block B. You can also call us at +91 98765 43210 or send an email through our contact form. We deliver directly to neighboring farms!";
+            return "Our primary shop is located at main market yard block B. You can also call us at +91 96239 64955 / +91 95273 82344 or send a message through our contact form. We deliver directly to neighboring farms!";
         }
-        
+
         return "I appreciate your question! I recommend using our **Crop Care Advisor** tool on this page to select your crop and get diagnostic action steps, or check our catalog to buy fertilizers and seeds. Let me know if you need specific product suggestions!";
     }
 }
