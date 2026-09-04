@@ -327,6 +327,80 @@ function initApp() {
     initChatbot(); // Initialize AI chatbot
 }
 
+// Real Photographic Product Images Database (High-Res Realistic Agricultural Photos)
+const PRODUCT_IMAGES = {
+    'cotton-seed': {
+        local: 'images/cotton-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real high yield hybrid cotton crop'
+    },
+    'wheat-seed': {
+        local: 'images/wheat-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real golden wheat harvest seeds and ears'
+    },
+    'corn-seed': {
+        local: 'images/corn-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real sweet hybrid F1 corn'
+    },
+    'paddy-seed': {
+        local: 'images/paddy-seed.jpg',
+        fallback: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real agricultural rice paddy grains'
+    },
+    'vermicompost': {
+        local: 'images/vermicompost.jpg',
+        fallback: 'https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real organic dark vermicompost enriched soil'
+    },
+    'npk': {
+        local: 'images/npk.jpg',
+        fallback: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real NPK water-soluble fertilizer nutrients'
+    },
+    'liquid-booster': {
+        local: 'images/liquid-booster.jpg',
+        fallback: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real liquid crop booster nutrition bottle'
+    },
+    'micronutrient': {
+        local: 'images/micronutrient.jpg',
+        fallback: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real soil micronutrient minerals mixture'
+    },
+    'neem-shield': {
+        local: 'images/neem-shield.jpg',
+        fallback: 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real bio-pesticide neem shield botanical oil'
+    },
+    'fungicide': {
+        local: 'images/fungicide.jpg',
+        fallback: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real broad-spectrum agricultural fungicide'
+    },
+    'herbicide': {
+        local: 'images/herbicide.jpg',
+        fallback: 'https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real selective agricultural weed herbicide'
+    },
+    'trowel': {
+        local: 'images/trowel.jpg',
+        fallback: 'https://images.unsplash.com/photo-1617576683096-00fc8eecb3af?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real ergonomic aluminum hand trowel in soil'
+    },
+    'sprayer': {
+        local: 'images/sprayer.jpg',
+        fallback: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real battery-operated knapsack sprayer'
+    },
+    'ph-meter': {
+        local: 'images/ph-meter.jpg',
+        fallback: 'https://images.unsplash.com/photo-1585314062604-1a357de8b000?auto=format&fit=crop&w=800&q=80',
+        alt: 'Real 3-in-1 soil moisture and pH tester device'
+    }
+};
+
 // Get Real Product Image with fallback and optional product name tag badge
 function getProductSVG(imageName, productName = '', showNameTag = true) {
     if (!productName) {
@@ -334,21 +408,32 @@ function getProductSVG(imageName, productName = '', showNameTag = true) {
         if (found) productName = found.name;
     }
 
-    const nameBadgeHTML = (showNameTag && productName) 
-        ? `<div class="product-img-name-tag"><span>${productName}</span></div>` 
+    const item = PRODUCT_IMAGES[imageName] || {
+        local: `images/${imageName}.jpg`,
+        fallback: 'https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=500&auto=format&fit=crop&q=80',
+        alt: productName || imageName
+    };
+
+    const nameBadgeHTML = (showNameTag && productName)
+        ? `<div class="product-img-name-tag"><span>${productName}</span></div>`
         : '';
 
     return `
         <div class="real-product-image-wrap">
-            <img src="images/${imageName}.jpg" 
-                 alt="${productName || imageName}" 
-                 class="real-product-img" 
+            <img src="${item.local}" 
+                 alt="${productName || item.alt}" 
+                 class="real-product-img product-img" 
                  loading="lazy" 
-                 onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=500&auto=format&fit=crop&q=80';" />
+                 onerror="if(this.src!=='${item.fallback}'){this.src='${item.fallback}';}" />
             ${nameBadgeHTML}
         </div>
     `;
 }
+
+function getProductImage(imageName, customAlt = '') {
+    return getProductSVG(imageName, customAlt, false);
+}
+
 
 // Render Featured Products (Home Page Preview - 4 Items)
 function renderFeaturedProducts() {
@@ -424,8 +509,8 @@ function renderProducts() {
     const filtered = PRODUCTS.filter(p => {
         const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
         const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+            p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesCategory && matchesSearch;
     });
 
@@ -610,7 +695,7 @@ function setupEventListeners() {
         return () => {
             clearTimeout(timer);
             timer = setTimeout(() => {
-                const crop  = document.getElementById('advisory-crop')?.value;
+                const crop = document.getElementById('advisory-crop')?.value;
                 const issue = document.getElementById('advisory-issue')?.value;
                 if (crop && issue) {
                     fetch(`${API_BASE}/advisory/log`, {
@@ -660,16 +745,16 @@ function setupEventListeners() {
                     <path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path>
                 </svg> Sending...`;
 
-            const name    = contactForm.querySelector('#contact-name')?.value  || contactForm.querySelector('[name="name"]')?.value  || '';
-            const email   = contactForm.querySelector('#contact-email')?.value || contactForm.querySelector('[name="email"]')?.value || '';
-            const phone   = contactForm.querySelector('#contact-phone')?.value || contactForm.querySelector('[name="phone"]')?.value || '';
-            const message = contactForm.querySelector('#contact-msg')?.value   || contactForm.querySelector('[name="message"]')?.value || contactForm.querySelector('textarea')?.value || '';
+            const name = contactForm.querySelector('#contact-name')?.value || contactForm.querySelector('[name="name"]')?.value || '';
+            const email = contactForm.querySelector('#contact-email')?.value || contactForm.querySelector('[name="email"]')?.value || '';
+            const phone = contactForm.querySelector('#contact-phone')?.value || contactForm.querySelector('[name="phone"]')?.value || '';
+            const message = contactForm.querySelector('#contact-msg')?.value || contactForm.querySelector('[name="message"]')?.value || contactForm.querySelector('textarea')?.value || '';
 
             try {
-                const res  = await fetch(`${API_BASE}/contact`, {
-                    method:  'POST',
+                const res = await fetch(`${API_BASE}/contact`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ name, email, phone, message }),
+                    body: JSON.stringify({ name, email, phone, message }),
                 });
                 const data = await res.json();
 
@@ -685,13 +770,13 @@ function setupEventListeners() {
                             <p>${data.message}</p>
                         </div>`;
                 } else {
-                    submitBtn.disabled  = false;
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHTML;
                     const errMsg = data.errors ? data.errors.map(e => e.msg).join(' ') : (data.message || 'Failed to send. Please try again.');
                     showToast('⚠ ' + errMsg);
                 }
             } catch (err) {
-                submitBtn.disabled  = false;
+                submitBtn.disabled = false;
                 submitBtn.innerHTML = originalHTML;
                 showToast('⚠ Could not reach the server. Please check your connection.');
             }
@@ -722,7 +807,7 @@ function setupEventListeners() {
         newsletterForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const emailInput = document.getElementById('newsletter-email');
-            const submitBtn  = newsletterForm.querySelector('button[type="submit"]');
+            const submitBtn = newsletterForm.querySelector('button[type="submit"]');
             const email = emailInput?.value.trim();
             if (!email) return;
 
@@ -731,10 +816,10 @@ function setupEventListeners() {
             submitBtn.textContent = '...';
 
             try {
-                const res  = await fetch(`${API_BASE}/newsletter/subscribe`, {
-                    method:  'POST',
+                const res = await fetch(`${API_BASE}/newsletter/subscribe`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify({ email }),
+                    body: JSON.stringify({ email }),
                 });
                 const data = await res.json();
                 showToast(data.success ? '✅ ' + data.message : '⚠ ' + (data.message || 'Subscription failed.'));
@@ -742,7 +827,7 @@ function setupEventListeners() {
             } catch {
                 showToast('⚠ Could not reach server. Please try again.');
             } finally {
-                submitBtn.disabled  = false;
+                submitBtn.disabled = false;
                 submitBtn.innerHTML = orig;
             }
         });
@@ -762,7 +847,7 @@ function addToCart(productId) {
     }
 
     updateCartUI();
-    
+
     // Add micro-animation effect to Cart count in Navbar
     const badge = document.querySelector('.cart-count-badge');
     if (badge) {
@@ -802,7 +887,7 @@ function removeFromCart(id) {
 function updateCartUI() {
     try {
         localStorage.setItem('md_cart', JSON.stringify(cart));
-    } catch(e) {}
+    } catch (e) { }
 
     const container = document.getElementById('cart-items-container');
     const totalCountElem = document.getElementById('cart-total-count');
@@ -881,8 +966,8 @@ function updateCartUI() {
 
 // Process Checkout Simulation
 async function processCheckout() {
-    const name    = document.getElementById('chk-name')?.value.trim()    || '';
-    const phone   = document.getElementById('chk-phone')?.value.trim()   || '';
+    const name = document.getElementById('chk-name')?.value.trim() || '';
+    const phone = document.getElementById('chk-phone')?.value.trim() || '';
     const address = document.getElementById('chk-address')?.value.trim() || '';
 
     if (!name || !phone || !address) {
@@ -893,20 +978,20 @@ async function processCheckout() {
     const checkoutBtn = document.getElementById('cart-checkout-btn');
     const origBtnText = checkoutBtn ? checkoutBtn.innerHTML : '';
     if (checkoutBtn) {
-        checkoutBtn.disabled  = true;
+        checkoutBtn.disabled = true;
         checkoutBtn.innerHTML = `<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2 A 10 10 0 0 1 22 12" stroke-linecap="round"></path></svg> Placing Order...`;
     }
 
     const items = cart.map(item => ({
         productId: item.product.id,
-        quantity:  item.quantity,
+        quantity: item.quantity,
     }));
 
     try {
-        const res  = await fetch(`${API_BASE}/orders`, {
-            method:  'POST',
+        const res = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ customerName: name, phone, address, items }),
+            body: JSON.stringify({ customerName: name, phone, address, items }),
         });
         const data = await res.json();
 
@@ -1166,11 +1251,23 @@ function initChatbot() {
 
     if (!chatbotToggle || !chatbotContainer || !chatbotClose || !chatForm || !chatInput || !chatMessages) return;
 
+    // Delegate click on Add-to-cart buttons inside chatbot messages
+    chatMessages.addEventListener('click', (e) => {
+        const buyBtn = e.target.closest('.chat-buy-btn');
+        if (buyBtn) {
+            const prodId = buyBtn.getAttribute('data-product-id');
+            if (prodId && typeof addToCart === 'function') {
+                addToCart(prodId);
+            }
+        }
+    });
+
     // Toggle Chatbot
     chatbotToggle.addEventListener('click', () => {
         chatbotContainer.classList.toggle('active');
-        // Scroll to bottom of chat
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
     });
 
     chatbotClose.addEventListener('click', () => {
@@ -1182,7 +1279,7 @@ function initChatbot() {
         quickReplies.addEventListener('click', (e) => {
             const pill = e.target.closest('.reply-pill');
             if (pill) {
-                const text = pill.textContent;
+                const text = pill.textContent.trim();
                 sendMessage(text);
             }
         });
@@ -1198,32 +1295,58 @@ function initChatbot() {
     });
 
     function sendMessage(text) {
-        // User Message
         appendMessage('user', text);
-        
-        // Show Typing Indicator
         const typingId = showTypingIndicator();
 
-        // Simulate AI Response delay
         setTimeout(() => {
             removeTypingIndicator(typingId);
-            const response = getAIResponse(text);
-            appendMessage('bot', response);
-        }, 1200);
+            const { text: responseText, pills } = processAIQuery(text);
+            appendMessage('bot', responseText);
+            if (pills && pills.length > 0) {
+                updateQuickReplyPills(pills);
+            }
+        }, 500);
+    }
+
+    function updateQuickReplyPills(pills) {
+        if (!quickReplies) return;
+        quickReplies.innerHTML = pills.map(p => `<button class="reply-pill">${p}</button>`).join('');
+    }
+
+    function renderProductCardHTML(p) {
+        if (!p) return '';
+        return `
+            <div class="chat-product-card">
+                <div class="chat-product-title">${p.name}</div>
+                <div class="chat-product-desc">${p.description}</div>
+                <div class="chat-product-price">₹${p.price} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(${p.unit})</span></div>
+                <button class="chat-buy-btn" data-product-id="${p.id}">🛒 Add to Cart</button>
+            </div>
+        `;
+    }
+
+    function formatChatMessage(text) {
+        if (!text) return '';
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
     }
 
     function appendMessage(sender, text) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${sender}-msg fade-in`;
-        
-        const avatar = sender === 'bot' ? 
-            `<div class="chat-avatar bot-avatar">🌱</div>` : 
+
+        const avatar = sender === 'bot' ?
+            `<div class="chat-avatar bot-avatar">🌱</div>` :
             `<div class="chat-avatar user-avatar">👤</div>`;
+
+        const formattedContent = formatChatMessage(text);
 
         msgDiv.innerHTML = `
             ${avatar}
             <div class="chat-bubble">
-                <p>${text}</p>
+                <p>${formattedContent}</p>
             </div>
         `;
         chatMessages.appendChild(msgDiv);
@@ -1255,38 +1378,191 @@ function initChatbot() {
         if (elem) elem.remove();
     }
 
-    function getAIResponse(query) {
-        const q = query.toLowerCase();
-        
-        // Match response
-        if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('start') || q.includes('help')) {
-            return "Hello there! I am your MD Agro AI assistant. I can advise you on crops, fertilizer needs, or pest management. What crop are you cultivating today?";
+    function processAIQuery(query) {
+        const q = query.toLowerCase().trim();
+
+        // 1. Check direct product query in PRODUCTS catalog
+        if (q.includes('vermicompost') || q.includes('earthworm') || q.includes('compost')) {
+            const p = PRODUCTS.find(prod => prod.id === 'f1');
+            return {
+                text: "🌱 **Organic Vermicompost Booster**\n100% natural organic earthworm compost enriched with nitrogen, phosphorus, and potassium to build long-term soil fertility and root strength.\n" + renderProductCardHTML(p),
+                pills: ['NPK 19:19:19', 'Soil pH Meter', 'Delivery Time']
+            };
         }
-        if (q.includes('cotton')) {
-            return "Cotton is an excellent crop. Watch out for <strong>Pink Bollworm</strong> and sucking pests. Use our <strong>Bio-Pesticide Neem Shield</strong> for organic defense, and apply <strong>NPK 19:19:19</strong> at flowering.";
+
+        if (q.includes('npk') || q.includes('19:19:19') || q.includes('water soluble')) {
+            const p = PRODUCTS.find(prod => prod.id === 'f2');
+            return {
+                text: "⚡ **NPK 19:19:19 Soluble Fertilizer**\nFully water-soluble fertilizer delivering balanced N, P, K for fast foliar feeding, rapid tillering, and uniform crop growth.\n" + renderProductCardHTML(p),
+                pills: ['Vermicompost', 'Crop Booster Liquid', 'Cotton Care']
+            };
         }
-        if (q.includes('wheat')) {
-            return "For high Wheat yield, ensure proper tillering by applying nitrogen-rich <strong>NPK 19:19:19</strong> or <strong>Vermicompost</strong>. If you spot yellow/brown powdery residue on leaves, spray <strong>Fungicide Cure-All</strong> immediately to prevent rust.";
+
+        if (q.includes('neem') || q.includes('bio-pesticide') || q.includes('insecticide') || q.includes('pest control')) {
+            const p = PRODUCTS.find(prod => prod.id === 'p1');
+            return {
+                text: "🛡️ **Bio-Pesticide Neem Shield**\nCold-pressed neem oil formulation with high Azadirachtin content. Natural eco-friendly defense against 200+ chewing & sucking pests.\n" + renderProductCardHTML(p),
+                pills: ['Fungicide Cure-All', 'Knapsack Sprayer', 'Cotton Care']
+            };
         }
-        if (q.includes('paddy') || q.includes('rice')) {
-            return "For Paddy, keep a steady water level. Watch out for brown planthoppers and stem borers (spray Neem Shield). If leaves turn rusty brown, you likely have a Zinc deficiency—use our <strong>Soil Micronutrient Mixture</strong>.";
+
+        if (q.includes('sprayer') || q.includes('battery sprayer') || q.includes('knapsack') || q.includes('pump')) {
+            const p = PRODUCTS.find(prod => prod.id === 't2');
+            return {
+                text: "🔋 **Battery Operated Knapsack Sprayer (16L)**\nHeavy-duty electric sprayer with rechargeable battery, pressure regulator, and multiple spray nozzles for effortless farm coverage.\n" + renderProductCardHTML(p),
+                pills: ['Neem Shield', 'Fungicide Cure-All', 'Hand Trowel']
+            };
         }
-        if (q.includes('npk') || q.includes('fertilizer') || q.includes('manure')) {
-            return "We supply premium <strong>NPK 19:19:19</strong> (water soluble, great for uniform growth) and premium <strong>Vermicompost</strong> (organic matter booster). Apply NPK during vegetative growth and vermicompost for long-term soil health.";
+
+        if (q.includes('ph') || q.includes('tester') || q.includes('moisture meter') || q.includes('meter')) {
+            const p = PRODUCTS.find(prod => prod.id === 't3');
+            return {
+                text: "📊 **3-in-1 Soil Moisture & pH Meter**\nBattery-free instant testing tool for soil moisture, pH level, and light intensity to practice precision farming.\n" + renderProductCardHTML(p),
+                pills: ['Micronutrient Mix', 'Vermicompost', 'Soil Acidity']
+            };
         }
-        if (q.includes('pest') || q.includes('insect') || q.includes('spray') || q.includes('weed')) {
-            return "For eco-friendly pest control, we highly recommend <strong>Bio-Pesticide Neem Shield</strong>. For fungal diseases like leaf spots or mildews, use <strong>Fungicide Cure-All</strong>. You can use our <strong>Battery Operated Knapsack Sprayer</strong> for easy application!";
+
+        if (q.includes('fungicide') || q.includes('leaf spot') || q.includes('powdery mildew') || q.includes('rust') || q.includes('fungus')) {
+            const p = PRODUCTS.find(prod => prod.id === 'p2');
+            return {
+                text: "🌾 **Fungicide Cure-All Powder**\nBroad-spectrum systemic fungicide offering both preventive and curative protection against fungal leaf spots, rust, and blights.\n" + renderProductCardHTML(p),
+                pills: ['Wheat Care', 'Neem Shield', 'Sprayer']
+            };
         }
-        if (q.includes('soil') || q.includes('ph') || q.includes('acid')) {
-            return "Test your soil! We offer a <strong>3-in-1 Soil Moisture & pH Meter</strong>. If your soil is acidic, add vermicompost or agricultural lime. Nutrient-deficient soil benefit significantly from <strong>Micronutrient Mixture</strong>.";
+
+        if (q.includes('herbicide') || q.includes('weed') || q.includes('weeding') || q.includes('grass')) {
+            const p = PRODUCTS.find(prod => prod.id === 'p3');
+            return {
+                text: "🌱 **Selective Herbicide Green-Clean**\nPost-emergence selective herbicide for fast control of broadleaf weeds without harming your main crop.\n" + renderProductCardHTML(p),
+                pills: ['Hand Trowel', 'Neem Shield', 'NPK 19:19:19']
+            };
         }
-        if (q.includes('delivery') || q.includes('order') || q.includes('shop') || q.includes('shipping')) {
-            return "MD Agro Services offers cash on delivery and home delivery for farmers. Once you place an order in the cart, our team contacts you to verify the location and deliver within 24-48 hours.";
+
+        if (q.includes('seed') || q.includes('seeds')) {
+            const seeds = PRODUCTS.filter(prod => prod.category === 'seeds');
+            const seedsCards = seeds.map(renderProductCardHTML).join('');
+            return {
+                text: "🌱 **MD Agro Certified High-Yield Seeds**\nWe supply government-certified, high-germination hybrid seeds for major regional crops:\n" + seedsCards,
+                pills: ['Cotton Care', 'Wheat Care', 'Sweet Corn', 'Paddy Care']
+            };
         }
-        if (q.includes('location') || q.includes('contact') || q.includes('phone') || q.includes('address')) {
-            return "Our primary shop is located at main market yard block B. You can also call us at +91 98765 43210 or send an email through our contact form. We deliver directly to neighboring farms!";
+
+        if (q.includes('fertilizer') || q.includes('fertilizers') || q.includes('manure') || q.includes('booster')) {
+            const ferts = PRODUCTS.filter(prod => prod.category === 'fertilizers');
+            const fertCards = ferts.map(renderProductCardHTML).join('');
+            return {
+                text: "🌿 **MD Agro Premium Fertilizers & Soil Nutrients**\nFormulated for maximum absorption and soil rejuvenation:\n" + fertCards,
+                pills: ['Vermicompost', 'NPK 19:19:19', 'Crop Booster', 'Micronutrient']
+            };
         }
-        
-        return "I appreciate your question! I recommend using our **Crop Care Advisor** tool on this page to select your crop and get diagnostic action steps, or check our catalog to buy fertilizers and seeds. Let me know if you need specific product suggestions!";
+
+        if (q.includes('tool') || q.includes('equipment') || q.includes('machine')) {
+            const tools = PRODUCTS.filter(prod => prod.category === 'tools');
+            const toolCards = tools.map(renderProductCardHTML).join('');
+            return {
+                text: "🛠️ **MD Agro Smart Farm Tools & Equipment**\nHigh-durability tools designed for farm efficiency:\n" + toolCards,
+                pills: ['Knapsack Sprayer', 'pH Meter', 'Hand Trowel']
+            };
+        }
+
+        // 2. Crop Diagnostics & Symptoms
+        if (q.includes('cotton') || q.includes('kapas')) {
+            const p1 = PRODUCTS.find(prod => prod.id === 'p1');
+            const f2 = PRODUCTS.find(prod => prod.id === 'f2');
+            return {
+                text: "☁️ **Cotton (Kapas) Care & Advisory**\n\n• **Pest Threat**: Watch for Pink Bollworm and sucking pests. Use **Neem Shield** for organic protection.\n• **Nutrients**: Apply **NPK 19:19:19** at square formation and flowering to increase boll size.\n\nRecommended products:\n" + renderProductCardHTML(p1) + renderProductCardHTML(f2),
+                pills: ['Buy Neem Shield', 'NPK 19:19:19', 'Soil pH Meter', 'Delivery Time']
+            };
+        }
+
+        if (q.includes('wheat') || q.includes('gehun')) {
+            const f1 = PRODUCTS.find(prod => prod.id === 'f1');
+            const p2 = PRODUCTS.find(prod => prod.id === 'p2');
+            return {
+                text: "🌾 **Wheat (Gehun) Advisory**\n\n• **Tillering**: Apply **Vermicompost** or nitrogen boost at early growth stage for dense tillers.\n• **Rust Prevention**: If yellow/brown residue appears on leaves, apply **Fungicide Cure-All** immediately.\n\nRecommended products:\n" + renderProductCardHTML(f1) + renderProductCardHTML(p2),
+                pills: ['Vermicompost', 'Fungicide Cure-All', 'Knapsack Sprayer', 'Contact Support']
+            };
+        }
+
+        if (q.includes('paddy') || q.includes('rice') || q.includes('dhan')) {
+            const f4 = PRODUCTS.find(prod => prod.id === 'f4');
+            const p1 = PRODUCTS.find(prod => prod.id === 'p1');
+            return {
+                text: "🌾 **Paddy / Rice (Dhan) Advisory**\n\n• **Zinc Deficiency**: If leaves turn rusty brown, apply **Soil Micronutrient Mixture** immediately.\n• **Stem Borer**: Spray **Neem Shield** during early tillering.\n\nRecommended products:\n" + renderProductCardHTML(f4) + renderProductCardHTML(p1),
+                pills: ['Micronutrient Mix', 'Neem Shield', 'High-Yield Paddy Seeds']
+            };
+        }
+
+        if (q.includes('corn') || q.includes('maize') || q.includes('makka')) {
+            const s3 = PRODUCTS.find(prod => prod.id === 's3');
+            const f3 = PRODUCTS.find(prod => prod.id === 'f3');
+            return {
+                text: "🌽 **Sweet Corn / Maize Advisory**\n\n• **Sowing**: Use **Sweet Corn Hybrid F1** seeds for 95%+ germination rate.\n• **Cob Development**: Spray **Crop Booster Liquid** at cob formation for full kernel filling.\n\nRecommended products:\n" + renderProductCardHTML(s3) + renderProductCardHTML(f3),
+                pills: ['Sweet Corn F1', 'Crop Booster Liquid', 'Delivery Time']
+            };
+        }
+
+        if (q.includes('yellow') || q.includes('stunt') || q.includes('deficiency') || q.includes('pale')) {
+            const f2 = PRODUCTS.find(prod => prod.id === 'f2');
+            const f4 = PRODUCTS.find(prod => prod.id === 'f4');
+            return {
+                text: "🟡 **Leaf Yellowing & Growth Stunting Diagnosis**\n\nYellowing lower leaves indicate **Nitrogen / NPK deficiency**. Yellowing upper young leaves indicate **Zinc / Iron micronutrient deficiency**.\n\nRecommended curative treatment:\n" + renderProductCardHTML(f2) + renderProductCardHTML(f4),
+                pills: ['NPK 19:19:19', 'Micronutrient Mix', 'Vermicompost']
+            };
+        }
+
+        if (q.includes('acid') || q.includes('soil test') || q.includes('ph') || q.includes('clay')) {
+            const t3 = PRODUCTS.find(prod => prod.id === 't3');
+            const f1 = PRODUCTS.find(prod => prod.id === 'f1');
+            return {
+                text: "🧪 **Soil Acidity & Soil Health Protocol**\n\nAcidic soils (pH below 6.0) lock essential nutrients away from roots. Test soil pH with a **3-in-1 Meter** and mix **Vermicompost** to raise organic carbon.\n\nRecommended solutions:\n" + renderProductCardHTML(t3) + renderProductCardHTML(f1),
+                pills: ['pH Meter', 'Vermicompost', 'Micronutrient Mix']
+            };
+        }
+
+        // 3. Price list & Catalog queries
+        if (q.includes('price') || q.includes('cost') || q.includes('rate') || q.includes('catalog') || q.includes('list') || q.includes('buy')) {
+            return {
+                text: "🏷️ **MD Agro Transparent Price List**\n\n• **Organic Vermicompost**: ₹250 (10kg)\n• **NPK 19:19:19 Soluble**: ₹350 (kg)\n• **Neem Shield Bio-Pesticide**: ₹290 (500ml)\n• **Fungicide Cure-All**: ₹420 (500g)\n• **Battery Knapsack Sprayer**: ₹2,800\n• **3-in-1 pH & Moisture Meter**: ₹650\n\nClick below to view category products or add items directly to your cart!",
+                pills: ['Seeds Catalog', 'Fertilizers List', 'Tools & Equipment']
+            };
+        }
+
+        // 4. Delivery & Payment queries
+        if (q.includes('delivery') || q.includes('ship') || q.includes('cod') || q.includes('cash on delivery') || q.includes('payment') || q.includes('order')) {
+            return {
+                text: "🚚 **Delivery & Cash on Delivery (COD) Info**\n\n• **Payment Method**: Cash on Delivery (COD) available for all village orders.\n• **Timeline**: Delivered directly to your farm within **24 - 48 hours**.\n• **Verification**: Our local agronomist team calls to confirm your address & crop needs after ordering.",
+                pills: ['Best Fertilizer', 'Cotton Care', 'Contact Support']
+            };
+        }
+
+        // 5. Contact, Address & Support queries
+        if (q.includes('contact') || q.includes('phone') || q.includes('call') || q.includes('location') || q.includes('address') || q.includes('shop') || q.includes('where')) {
+            return {
+                text: "📍 **MD Agro Services Contact & Store Details**\n\n• **Address**: Main Market Yard, Block B, MD Agro Service Center.\n• **Helpline**: +91 96239 64955 / +91 95273 82344\n• **Hours**: Mon - Sat: 8:00 AM - 8:00 PM\n• **Village Delivery**: Available within 50 km radius!",
+                pills: ['Cotton Care', 'Fertilizer List', 'Delivery Info']
+            };
+        }
+
+        // 6. Greetings & Gratitude
+        if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('namaste') || q.includes('start')) {
+            return {
+                text: "👋 **Welcome to MD Agro AI Assistant!**\nI can help you diagnose crop symptoms, select certified seeds, recommend fertilizers, or check delivery details. What crop are you growing today?",
+                pills: ['Cotton Care', 'Wheat Care', 'Best Fertilizer', 'Soil Test']
+            };
+        }
+
+        if (q.includes('thank') || q.includes('thanks') || q.includes('dhanyawad') || q.includes('ok') || q.includes('good')) {
+            return {
+                text: "🙏 You are welcome! We are dedicated to empowering high-yield farming. Feel free to ask any other questions or browse our catalog!",
+                pills: ['Cotton Care', 'Best Fertilizer', 'Contact Support']
+            };
+        }
+
+        // Fallback for unmatched queries
+        return {
+            text: "🌱 **MD Agro Smart Assistant**\n\nI can help you with:\n• **Crop Diagnostics**: Cotton, Wheat, Paddy, Corn, Vegetables\n• **Fertilizers & Soil**: Vermicompost, NPK 19:19:19, Micronutrients\n• **Crop Protection**: Neem Shield, Fungicides, Herbicides\n• **Tools**: Battery Sprayers, Soil pH meters\n\nSelect a topic below or type your crop symptom!",
+            pills: ['Cotton Care', 'Wheat Care', 'Best Fertilizer', 'Soil Test']
+        };
     }
 }
