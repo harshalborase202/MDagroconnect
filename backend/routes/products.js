@@ -10,6 +10,21 @@ const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
 
+const DEFAULT_CATALOG = [
+  { id: 's1', name: 'Cotton Hybrid Pro Seeds', category: 'seeds', price: 450, unit: 'per kg', rating: 4.8, reviews: 128, description: 'High-yield cotton seeds with excellent pest resistance.', image: 'cotton-seed', tags: ['Best Seller', 'High Yield'], in_stock: 1 },
+  { id: 's2', name: 'Golden Wheat Premium Seeds', category: 'seeds', price: 320, unit: 'per 5kg bag', rating: 4.7, reviews: 95, description: 'Certified premium grade wheat seeds optimized for maximum grain weight.', image: 'wheat-seed', tags: ['Organic', 'Certified'], in_stock: 1 },
+  { id: 's3', name: 'Sweet Corn Hybrid F1', category: 'seeds', price: 180, unit: 'per 500g', rating: 4.9, reviews: 64, description: 'Super sweet F1 hybrid variety with high germination rates.', image: 'corn-seed', tags: ['Sweet', 'F1 Hybrid'], in_stock: 1 },
+  { id: 's4', name: 'High-Yield Paddy Seeds', category: 'seeds', price: 550, unit: 'per 10kg bag', rating: 4.6, reviews: 112, description: 'Premium rice seeds suitable for direct seeding.', image: 'paddy-seed', tags: ['Drought Tolerant'], in_stock: 1 },
+  { id: 'f1', name: 'Organic Vermicompost booster', category: 'fertilizers', price: 250, unit: 'per 10kg bag', rating: 4.9, reviews: 210, description: '100% organic earthworm compost enriched with nitrogen.', image: 'vermicompost', tags: ['100% Organic', 'Soil Health'], in_stock: 1 },
+  { id: 'f2', name: 'NPK 19:19:19 Soluble Fertilizer', category: 'fertilizers', price: 350, unit: 'per kg', rating: 4.7, reviews: 142, description: 'Fully water-soluble fertilizer for balanced crop nutrition.', image: 'npk', tags: ['Water Soluble'], in_stock: 1 },
+  { id: 'f3', name: 'Premium Crop Booster Liquid', category: 'fertilizers', price: 499, unit: 'per 500ml', rating: 4.8, reviews: 87, description: 'Advanced liquid fertilizer with micronutrients and seaweed extract.', image: 'liquid-booster', tags: ['Fast Acting', 'Micronutrients'], in_stock: 1 },
+  { id: 'f4', name: 'Soil Micronutrient Mixture', category: 'fertilizers', price: 280, unit: 'per 2kg bag', rating: 4.5, reviews: 49, description: 'Formulated mix of Zinc, Iron, Manganese, Boron, and Copper.', image: 'micronutrient', tags: ['Deficiency Cure'], in_stock: 1 },
+  { id: 'p1', name: 'Bio-Pesticide Neem Shield', category: 'protection', price: 399, unit: 'per litre', rating: 4.8, reviews: 175, description: 'Cold-pressed concentrated neem oil extract. Natural repellent.', image: 'neem-oil', tags: ['Eco Friendly', 'Organic'], in_stock: 1 },
+  { id: 'p2', name: 'Systemic Fungicide Guard', category: 'protection', price: 520, unit: 'per 500g', rating: 4.6, reviews: 88, description: 'Broad-spectrum systemic fungicide for leaf spots and powdery mildew.', image: 'fungicide', tags: ['Broad Spectrum'], in_stock: 1 },
+  { id: 'p3', name: 'Sticky Insect Traps (Pack of 20)', category: 'protection', price: 199, unit: 'pack of 20', rating: 4.7, reviews: 93, description: 'Bright yellow/blue double-sided sticky glue traps.', image: 'sticky-trap', tags: ['Zero Chemical'], in_stock: 1 },
+  { id: 't1', name: 'Battery Powered Knapsack Sprayer', category: 'tools', price: 2499, unit: 'per unit (16L)', rating: 4.9, reviews: 310, description: '16L tank with 12V 8Ah rechargeable battery.', image: 'sprayer', tags: ['Heavy Duty', '1 Year Warranty'], in_stock: 1 }
+];
+
 // ── GET /api/products ─────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
@@ -46,8 +61,16 @@ router.get('/', async (req, res) => {
 
     res.json({ success: true, count: products.length, data: products });
   } catch (err) {
-    console.error('[products] GET /:', err.message);
-    res.status(500).json({ success: false, message: 'Failed to fetch products.' });
+    console.warn('[products] MySQL offline, serving fallback catalog:', err.message);
+    const { category, all } = req.query;
+    let filtered = DEFAULT_CATALOG;
+    if (all !== 'true') {
+      filtered = filtered.filter(p => p.in_stock === 1);
+    }
+    if (category) {
+      filtered = filtered.filter(p => p.category === category);
+    }
+    res.json({ success: true, count: filtered.length, data: filtered, isFallback: true });
   }
 });
 
