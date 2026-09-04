@@ -1296,6 +1296,8 @@ function initChatbot() {
 
     function sendMessage(text) {
         appendMessage('user', text);
+
+        // Show Typing Indicator
         const typingId = showTypingIndicator();
 
         setTimeout(() => {
