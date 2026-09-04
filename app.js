@@ -1246,68 +1246,7 @@ function showToast(message) {
     }, 2500);
 }
 
-// AI Agronomist Chatbot Logic — Powered by Google Gemini AI & Local Knowledge Base
-function initChatbot() {
-    const chatbotToggle = document.getElementById('chatbot-toggle');
-    const chatbotContainer = document.getElementById('chatbot-container');
-    const chatbotClose = document.getElementById('chatbot-close');
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatMessages = document.getElementById('chat-messages');
-    const quickReplies = document.querySelector('.quick-replies');
 
-    if (!chatbotToggle || !chatbotContainer || !chatbotClose || !chatForm || !chatInput || !chatMessages) return;
-
-    // Google Gemini API Configuration
-    // Uses backend proxy (/api/chat) or window.GEMINI_API_KEY (from local config.js)
-    const GEMINI_API_KEY = window.GEMINI_API_KEY || '';
-    const GEMINI_ENDPOINT = GEMINI_API_KEY ?
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=' + GEMINI_API_KEY : '';
-
-    const SYSTEM_PROMPT = `You are MD Agro Smart Agronomist, a friendly and practical agricultural assistant for MD Agro Connect (एम. डी. अँग्रो सर्व्हिसेस).
-Your mission is to provide simple, crisp, and farmer-friendly advice.
-Guidelines:
-1. Keep answers SHORT, CRISP, and SIMPLE (2 to 3 bullet points, under 60 words total). Avoid long paragraphs and scientific jargon.
-2. Give actionable farming steps (e.g. soil treatment, pest spray, irrigation timing).
-3. Recommend suitable MD Agro products when relevant (e.g. Organic Vermicompost, NPK 19:19:19, Neem Shield Bio-Pesticide, Fungicide Cure-All, Selective Herbicide, Knapsack Sprayer, 3-in-1 Soil pH Meter, Hybrid Seeds).
-4. Reply in the farmer's language (Marathi, Hindi, or English).
-5. Be warm, supportive, and respectful.`;
-
-    let chatHistory = [];
-
-    // Delegate click on Add-to-cart buttons inside chatbot messages
-    chatMessages.addEventListener('click', (e) => {
-        const buyBtn = e.target.closest('.chat-buy-btn');
-        if (buyBtn) {
-            const prodId = buyBtn.getAttribute('data-product-id');
-            if (prodId && typeof addToCart === 'function') {
-                addToCart(prodId);
-            }
-        }
-    });
-
-    // Toggle Chatbot
-    chatbotToggle.addEventListener('click', () => {
-        chatbotContainer.classList.toggle('active');
-        setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 100);
-    });
-
-    chatbotClose.addEventListener('click', () => {
-        chatbotContainer.classList.remove('active');
-    });
-
-    // Handle Quick Replies click
-    if (quickReplies) {
-        quickReplies.addEventListener('click', (e) => {
-            const pill = e.target.closest('.reply-pill');
-            if (pill) {
-                const text = pill.textContent.trim();
-                sendMessage(text);
-            }
-        });
-    }
 
 function showProductModal(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
@@ -1458,7 +1397,7 @@ function showToast(message) {
     }, 2500);
 }
 
-// AI Agronomist Chatbot Logic
+// AI Agronomist Chatbot Logic — Powered by Google Gemini AI & Local Knowledge Base
 function initChatbot() {
     const chatbotToggle = document.getElementById('chatbot-toggle');
     const chatbotContainer = document.getElementById('chatbot-container');
@@ -1469,6 +1408,24 @@ function initChatbot() {
     const quickReplies = document.querySelector('.quick-replies');
 
     if (!chatbotToggle || !chatbotContainer || !chatbotClose || !chatForm || !chatInput || !chatMessages) return;
+
+    // Google Gemini API Configuration
+    // Uses backend proxy (/api/chat) or window.GEMINI_API_KEY (from local config.js)
+    const GEMINI_API_KEY = window.GEMINI_API_KEY || '';
+    const GEMINI_ENDPOINT = GEMINI_API_KEY
+        ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + GEMINI_API_KEY
+        : '';
+
+    const SYSTEM_PROMPT = `You are MD Agro Smart Agronomist, a friendly and practical agricultural assistant for MD Agro Connect (एम. डी. अँग्रो सर्व्हिसेस).
+Your mission is to provide simple, crisp, and farmer-friendly advice.
+Guidelines:
+1. Keep answers SHORT, CRISP, and SIMPLE (2 to 3 bullet points, under 60 words total). Avoid long paragraphs and scientific jargon.
+2. Give actionable farming steps (e.g. soil treatment, pest spray, irrigation timing).
+3. Recommend suitable MD Agro products when relevant (e.g. Organic Vermicompost, NPK 19:19:19, Neem Shield Bio-Pesticide, Fungicide Cure-All, Selective Herbicide, Knapsack Sprayer, 3-in-1 Soil pH Meter, Hybrid Seeds).
+4. Reply in the farmer's language (Marathi, Hindi, or English).
+5. Be warm, supportive, and respectful.`;
+
+    let chatHistory = [];
 
     // Delegate click on Add-to-cart buttons inside chatbot messages
     chatMessages.addEventListener('click', (e) => {
@@ -1960,6 +1917,5 @@ function initChatbot() {
             pills: ['Cotton Care', 'Wheat Care', 'Best Fertilizer', 'Soil Test']
         };
     }
-}
 }
 
