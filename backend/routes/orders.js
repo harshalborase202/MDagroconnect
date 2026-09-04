@@ -44,7 +44,7 @@ router.post('/', orderValidation, async (req, res) => {
     return res.status(422).json({ success: false, errors: errors.array() });
   }
 
-  const { customerName, phone, address, notes, items } = req.body;
+  const { customerName, phone, address, notes, items, userId } = req.body;
   const conn = await pool.getConnection();
 
   try {
@@ -62,13 +62,15 @@ router.post('/', orderValidation, async (req, res) => {
       await conn.rollback();
       return res.status(400).json({
         success: false,
-        message: 'One or more products are unavailable or out of stock.',
+        message: 'One or more products in your cart are invalid or out of stock.',
       });
     }
 
-    const productMap = Object.fromEntries(products.map(p => [p.id, p]));
+    // Build product lookup
+    const productMap = {};
+    products.forEach(p => { productMap[p.id] = p; });
 
-    // Calculate total
+    // Calculate total amount and validate line items
     let totalAmount = 0;
     for (const item of items) {
       const p = productMap[item.productId];
@@ -76,18 +78,28 @@ router.post('/', orderValidation, async (req, res) => {
         await conn.rollback();
         return res.status(400).json({
           success: false,
-          message: `Product "${item.productId}" not found.`,
+          message: `Product ${item.productId} is not available.`,
         });
       }
       totalAmount += p.price * item.quantity;
     }
 
-    // Insert order
-    const [orderResult] = await conn.execute(
-      `INSERT INTO orders (customer_name, phone, address, total_amount, notes)
-       VALUES (?, ?, ?, ?, ?)`,
-      [customerName, phone, address, totalAmount, notes || null]
-    );
+    // Insert order (with optional user_id)
+    let orderResult;
+    try {
+      [orderResult] = await conn.execute(
+        `INSERT INTO orders (customer_name, phone, address, total_amount, notes, user_id)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [customerName, phone, address, totalAmount, notes || null, userId || null]
+      );
+    } catch (insertErr) {
+      // Fallback in case user_id column is not yet migrated in an older schema
+      [orderResult] = await conn.execute(
+        `INSERT INTO orders (customer_name, phone, address, total_amount, notes)
+         VALUES (?, ?, ?, ?, ?)`,
+        [customerName, phone, address, totalAmount, notes || null]
+      );
+    }
     const orderId = orderResult.insertId;
 
     // Insert order items
@@ -120,15 +132,21 @@ router.post('/', orderValidation, async (req, res) => {
 // ── GET /api/orders ───────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
-    const { status, limit = 50, offset = 0 } = req.query;
+    const { status, search, limit = 100, offset = 0 } = req.query;
 
-    let sql    = 'SELECT * FROM orders';
+    let sql    = 'SELECT * FROM orders WHERE 1=1';
     const params = [];
 
     const validStatuses = ['pending','confirmed','dispatched','delivered','cancelled'];
     if (status && validStatuses.includes(status)) {
-      sql += ' WHERE status = ?';
+      sql += ' AND status = ?';
       params.push(status);
+    }
+
+    if (search && search.trim()) {
+      sql += ' AND (customer_name LIKE ? OR phone LIKE ? OR id = ?)';
+      const term = `%${search.trim()}%`;
+      params.push(term, term, Number(search.trim()) || 0);
     }
 
     sql += ` ORDER BY created_at DESC LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
@@ -159,6 +177,51 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     console.error('[orders] GET /:id:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch order.' });
+  }
+});
+
+// ── PATCH /api/orders/:id/status ──────────────────────────────────────────
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid order ID.' });
+
+    const { status } = req.body;
+    const validStatuses = ['pending', 'confirmed', 'dispatched', 'delivered', 'cancelled'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status must be one of: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    const [result] = await pool.execute('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    res.json({ success: true, message: `Order #${id} status updated to "${status}".`, status });
+  } catch (err) {
+    console.error('[orders] PATCH /:id/status:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update order status.' });
+  }
+});
+
+// ── DELETE /api/orders/:id ────────────────────────────────────────────────
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid order ID.' });
+
+    const [result] = await pool.execute('DELETE FROM orders WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Order not found.' });
+    }
+
+    res.json({ success: true, message: `Order #${id} deleted successfully.` });
+  } catch (err) {
+    console.error('[orders] DELETE /:id:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to delete order.' });
   }
 });
 
