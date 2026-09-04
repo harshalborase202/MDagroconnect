@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1788549348215,
+    "name": "Ramesh Patil",
+    "phone": "9876234510",
+    "email": "ramesh@gmail.com",
+    "location": "Sonai",
+    "password": "1234",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-09-04T19:15:48.215Z",
+    "total_orders": 0,
+    "total_spent": 0
+  },
+  {
+    "id": 1788549277525,
+    "name": "Anand Shinde",
+    "phone": "9822998877",
+    "email": "anand@krishi.com",
+    "location": "Baramati, Pune",
+    "password": "testpassword",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-09-04T19:14:37.525Z",
+    "total_orders": 0,
+    "total_spent": 0
+  },
+  {
+    "id": 1,
+    "name": "Ramesh Patil",
+    "phone": "9822145670",
+    "email": "ramesh.patil@gmail.com",
+    "location": "Nashik, Maharashtra",
+    "password": "farmer123",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-08-25T19:14:22.929Z",
+    "total_orders": 2,
+    "total_spent": 1250
+  },
+  {
+    "id": 2,
+    "name": "Santosh Shinde",
+    "phone": "9423589123",
+    "email": "santosh.shinde@rediffmail.com",
+    "location": "Dindori, Maharashtra",
+    "password": "farmer123",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-08-30T19:14:22.930Z",
+    "total_orders": 1,
+    "total_spent": 450
+  }
+]

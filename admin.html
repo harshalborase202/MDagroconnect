@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD Agro Admin Portal | Store Management & Agronomy Intelligence</title>
+    <meta name="description" content="MD Agro Services store administration dashboard. Manage catalog products, farmer orders, crop inquiries, and newsletter subscribers.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('md_theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+
+    <!-- Admin Authentication Modal (Shown when not authenticated) -->
+    <div class="admin-auth-overlay" id="admin-auth-overlay">
+        <div class="admin-auth-card">
+            <div class="auth-header">
+                <div class="auth-brand-icon">🌱</div>
+                <h2>MD AGRO CONNECT</h2>
+                <p>Store Manager & Administrator Access</p>
+                <div class="auth-badge">🏛️ Krishi Mall Hub</div>
+            </div>
+
+            <form id="admin-login-form" class="admin-login-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="admin-user-input">Admin Username</label>
+                    <div class="input-with-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input type="text" id="admin-user-input" placeholder="Enter admin username" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="admin-pass-input">Security Passcode</label>
+                    <div class="input-with-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="admin-pass-input" placeholder="Enter administrator password" required autocomplete="new-password">
+                        <button type="button" class="pwd-toggle-btn" id="pwd-toggle-btn" aria-label="Toggle password visibility">👁️</button>
+                    </div>
+                </div>
+
+                <div id="auth-error-msg" class="auth-error-msg" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="admin-login-btn">
+                    <span>Sign In to Admin Portal</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="index.html" class="back-to-store-link">← Return to Public Storefront</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Admin Shell (Visible when authenticated) -->
+    <div class="admin-layout" id="admin-layout" style="display: none;">
+
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar-brand">
+                <a href="index.html" class="brand-link" title="Open Storefront">
+                    <span class="brand-icon">🌱</span>
+                    <div class="brand-info">
+                        <span class="brand-title">MD AGRO</span>
+                        <span class="brand-subtitle">Admin Portal</span>
+                    </div>
+                </a>
+                <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" aria-label="Toggle Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar-user-card">
+                <div class="user-avatar">👨‍🌾</div>
+                <div class="user-meta">
+                    <span class="user-name" id="admin-display-name">Store Admin</span>
+                    <span class="user-role">Krishi Mall Hub</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+
+                <button class="nav-item" data-tab="orders">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span>Orders</span>
+                    <span class="nav-badge badge-pending" id="badge-pending-orders">0</span>
+                </button>
+
+                <button class="nav-item" data-tab="users">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Registered Users</span>
+                    <span class="nav-badge" id="badge-total-users">0</span>
+                </button>
+
+                <button class="nav-item" data-tab="products">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>Catalog Products</span>
+                    <span class="nav-badge" id="badge-total-products">0</span>
+                </button>
+
+                <button class="nav-item" data-tab="inquiries">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Inquiries</span>
+                    <span class="nav-badge badge-unread" id="badge-unread-msgs">0</span>
+                </button>
+
+                <button class="nav-item" data-tab="subscribers">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span>Subscribers</span>
+                    <span class="nav-badge" id="badge-total-subs">0</span>
+                </button>
+
+                <button class="nav-item" data-tab="advisory">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span>Crop Advisory Insights</span>
+                </button>
+
+                <button class="nav-item" data-tab="settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Settings & API</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="index.html" class="sidebar-action-btn" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    <span>Live Storefront</span>
+                </a>
+                <button class="sidebar-action-btn logout-btn" id="admin-logout-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <!-- Top App Bar -->
+            <header class="admin-topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open Navigation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="topbar-breadcrumb">
+                        <span class="bc-portal">Admin Portal</span>
+                        <span class="bc-sep">/</span>
+                        <span class="bc-current" id="breadcrumb-current">Dashboard</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Theme Toggle Button -->
+                    <button class="admin-theme-toggle" id="admin-theme-toggle-btn" aria-label="Toggle Light and Dark Mode" title="Toggle Light/Dark Theme">
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+
+                    <!-- Connection Mode Indicator -->
+                    <div class="connection-status-pill" id="conn-status-pill" title="Checking server connection...">
+                        <span class="pulse-indicator"></span>
+                        <span class="status-label" id="conn-status-label">Connecting...</span>
+                    </div>
+
+                    <a href="index.html" class="btn btn-sm btn-outline-store" target="_blank" rel="noopener">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span>View Store</span>
+                    </a>
+
+                    <button class="btn btn-sm btn-refresh" id="refresh-all-btn" title="Refresh Live Data">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-content-viewport">
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 1: DASHBOARD / OVERVIEW
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane active" id="pane-dashboard">
+                    <div class="dashboard-hero-banner">
+                        <div class="banner-text">
+                            <h2>Welcome back, <span id="dash-admin-greeting">Store Administrator</span> 👋</h2>
+                            <p>Here is your real-time store performance, agricultural customer orders, and crop advisory queries.</p>
+                        </div>
+                        <div class="banner-stats-chip">
+                            <span>📅 Today:</span>
+                            <strong id="dash-current-date">Today</strong>
+                        </div>
+                    </div>
+
+                    <!-- Top 4 KPI Metrics -->
+                    <div class="metrics-grid">
+                        <div class="metric-card card-revenue">
+                            <div class="metric-icon-wrap">💰</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Total Revenue</span>
+                                <h3 class="metric-value" id="kpi-revenue">₹0</h3>
+                                <span class="metric-sub" id="kpi-revenue-sub">From confirmed & delivered orders</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card card-orders">
+                            <div class="metric-icon-wrap">📦</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Total Orders</span>
+                                <h3 class="metric-value" id="kpi-orders">0</h3>
+                                <div class="metric-status-tags" id="kpi-orders-tags">
+                                    <span class="tag-chip tag-pending">0 Pending</span>
+                                    <span class="tag-chip tag-confirmed">0 Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card card-products">
+                            <div class="metric-icon-wrap">🌿</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Catalog Products</span>
+                                <h3 class="metric-value" id="kpi-products">0</h3>
+                                <span class="metric-sub" id="kpi-products-sub">0 in stock, 0 out of stock</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card card-inquiries">
+                            <div class="metric-icon-wrap">💬</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Farmer Inquiries</span>
+                                <h3 class="metric-value" id="kpi-messages">0</h3>
+                                <span class="metric-sub highlight" id="kpi-messages-sub">0 unread messages</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card card-users">
+                            <div class="metric-icon-wrap">👥</div>
+                            <div class="metric-info">
+                                <span class="metric-label">Registered Farmers</span>
+                                <h3 class="metric-value" id="kpi-users">0</h3>
+                                <span class="metric-sub" id="kpi-users-sub">0 active accounts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Middle Row: Visual Analytics & Quick Actions -->
+                    <div class="dash-grid-secondary">
+                        <!-- Left: Order Status Distribution -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>Order Status Distribution</h3>
+                                <button class="btn-text-link" onclick="adminApp.switchTab('orders')">Manage Orders →</button>
+                            </div>
+                            <div class="order-dist-bars" id="order-dist-bars">
+                                <!-- Generated dynamically -->
+                                <div class="dist-row">
+                                    <span class="dist-label">Pending Review</span>
+                                    <div class="dist-bar-track"><div class="dist-bar-fill bar-pending" style="width: 20%;"></div></div>
+                                    <span class="dist-count" id="dist-pending">0</span>
+                                </div>
+                                <div class="dist-row">
+                                    <span class="dist-label">Confirmed / Processing</span>
+                                    <div class="dist-bar-track"><div class="dist-bar-fill bar-confirmed" style="width: 35%;"></div></div>
+                                    <span class="dist-count" id="dist-confirmed">0</span>
+                                </div>
+                                <div class="dist-row">
+                                    <span class="dist-label">Dispatched for Village Delivery</span>
+                                    <div class="dist-bar-track"><div class="dist-bar-fill bar-dispatched" style="width: 25%;"></div></div>
+                                    <span class="dist-count" id="dist-dispatched">0</span>
+                                </div>
+                                <div class="dist-row">
+                                    <span class="dist-label">Successfully Delivered</span>
+                                    <div class="dist-bar-track"><div class="dist-bar-fill bar-delivered" style="width: 15%;"></div></div>
+                                    <span class="dist-count" id="dist-delivered">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Crop Inquiries Analytics -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>Top Queried Crops (Crop Advisor)</h3>
+                                <button class="btn-text-link" onclick="adminApp.switchTab('advisory')">View Insights →</button>
+                            </div>
+                            <div class="crop-insights-list" id="dash-top-crops">
+                                <p class="loading-state">Loading crop query statistics...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Bottom: Recent Orders Preview -->
+                    <div class="dash-card recent-orders-card">
+                        <div class="dash-card-header">
+                            <div>
+                                <h3>Recent Customer Orders</h3>
+                                <p class="card-subtitle">Latest orders placed via storefront cart checkout</p>
+                            </div>
+                            <div class="header-actions">
+                                <button class="btn btn-sm btn-primary" onclick="adminApp.switchTab('orders')">View All Orders</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Contact</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Placed On</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-recent-orders-tbody">
+                                    <tr><td colspan="7" class="loading-state">Loading recent orders...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 2: ORDERS MANAGEMENT
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-orders">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Orders Management</h2>
+                            <p>Track, verify, and update order fulfillment status for farmers across all regions.</p>
+                        </div>
+                        <div class="title-actions">
+                            <button class="btn btn-outline" id="export-orders-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Orders Filter Controls -->
+                    <div class="filter-toolbar">
+                        <div class="filter-tabs" id="orders-status-filters">
+                            <button class="filter-btn active" data-status="all">All Orders (<span id="filter-cnt-all">0</span>)</button>
+                            <button class="filter-btn" data-status="pending">Pending (<span id="filter-cnt-pending">0</span>)</button>
+                            <button class="filter-btn" data-status="confirmed">Confirmed (<span id="filter-cnt-confirmed">0</span>)</button>
+                            <button class="filter-btn" data-status="dispatched">Dispatched (<span id="filter-cnt-dispatched">0</span>)</button>
+                            <button class="filter-btn" data-status="delivered">Delivered (<span id="filter-cnt-delivered">0</span>)</button>
+                            <button class="filter-btn" data-status="cancelled">Cancelled</button>
+                        </div>
+
+                        <div class="search-input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="orders-search-input" placeholder="Search by customer name, phone, or #ID...">
+                        </div>
+                    </div>
+
+                    <!-- Orders Data Table -->
+                    <div class="dash-card">
+                        <div class="table-responsive">
+                            <table class="admin-table" id="orders-full-table">
+                                <thead>
+                                    <tr>
+                                        <th># ID</th>
+                                        <th>Customer</th>
+                                        <th>Phone</th>
+                                        <th>Delivery Address</th>
+                                        <th>Total (₹)</th>
+                                        <th>Status</th>
+                                        <th>Order Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-tbody">
+                                    <tr><td colspan="8" class="loading-state">Loading orders...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB: REGISTERED USERS / FARMERS
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-users">
+                    <div class="section-header-bar">
+                        <div>
+                            <h2>Registered Farmers & User Accounts</h2>
+                            <p class="section-subtitle">Manage customer profiles, registration details, order history, and farming locations.</p>
+                        </div>
+                        <div class="header-actions-group">
+                            <button class="btn btn-outline-store btn-sm" id="btn-export-users-csv" onclick="adminApp.exportUsersCSV()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="adminApp.openAddUserModal()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Register Farmer</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Stats Strip -->
+                    <div class="sub-stats-grid">
+                        <div class="sub-stat-card">
+                            <span class="lbl">Total Farmers</span>
+                            <strong class="val" id="users-stat-total">0</strong>
+                        </div>
+                        <div class="sub-stat-card">
+                            <span class="lbl">Active Accounts</span>
+                            <strong class="val status-confirmed" id="users-stat-active">0</strong>
+                        </div>
+                        <div class="sub-stat-card">
+                            <span class="lbl">Suspended</span>
+                            <strong class="val status-cancelled" id="users-stat-suspended">0</strong>
+                        </div>
+                        <div class="sub-stat-card">
+                            <span class="lbl">Total User Orders</span>
+                            <strong class="val" id="users-stat-orders">0</strong>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Toolbar -->
+                    <div class="dash-card">
+                        <div class="table-toolbar">
+                            <div class="search-box">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" id="users-search-input" placeholder="Search by farmer name, mobile number, village/district...">
+                            </div>
+                            <div class="filter-group">
+                                <label for="users-filter-status">Status:</label>
+                                <select id="users-filter-status" class="filter-select">
+                                    <option value="all">All Accounts</option>
+                                    <option value="active">Active Only</option>
+                                    <option value="suspended">Suspended Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Users Table -->
+                        <div class="table-responsive">
+                            <table class="data-table" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Farmer / User</th>
+                                        <th>Contact</th>
+                                        <th>Village / Location</th>
+                                        <th>Joined On</th>
+                                        <th>Orders Placed</th>
+                                        <th>Total Spent</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody">
+                                    <tr>
+                                        <td colspan="8" class="loading-cell">Loading registered farmers & users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 3: PRODUCTS & INVENTORY
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-products">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Catalog Inventory Management</h2>
+                            <p>Add new agricultural supplies, modify prices, update descriptions, and toggle stock availability.</p>
+                        </div>
+                        <div class="title-actions">
+                            <button class="btn btn-primary" id="add-product-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Add New Product</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Filters -->
+                    <div class="filter-toolbar">
+                        <div class="filter-tabs" id="products-category-filters">
+                            <button class="filter-btn active" data-category="all">All Categories</button>
+                            <button class="filter-btn" data-category="seeds">Seeds</button>
+                            <button class="filter-btn" data-category="fertilizers">Fertilizers</button>
+                            <button class="filter-btn" data-category="protection">Crop Care</button>
+                            <button class="filter-btn" data-category="tools">Tools & Sprayers</button>
+                        </div>
+
+                        <div class="search-input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="products-search-input" placeholder="Search by product name, SKU, or tags...">
+                        </div>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div class="dash-card">
+                        <div class="table-responsive">
+                            <table class="admin-table" id="products-full-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>SKU / ID</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Unit</th>
+                                        <th>Stock Status</th>
+                                        <th>Rating / Reviews</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="products-table-tbody">
+                                    <tr><td colspan="8" class="loading-state">Loading product inventory...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 4: CUSTOMER INQUIRIES
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-inquiries">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Farmer Inquiries & Support Messages</h2>
+                            <p>Direct inquiries submitted via the Contact Us form and helpline requests.</p>
+                        </div>
+                        <div class="title-actions">
+                            <span class="badge badge-unread" id="inquiries-unread-badge">0 Unread</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-toolbar">
+                        <div class="filter-tabs" id="inquiries-filter-tabs">
+                            <button class="filter-btn active" data-filter="all">All Messages</button>
+                            <button class="filter-btn" data-filter="unread">Unread Only</button>
+                            <button class="filter-btn" data-filter="read">Read</button>
+                        </div>
+                    </div>
+
+                    <div class="dash-card">
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Farmer / Sender</th>
+                                        <th>Email</th>
+                                        <th>Mobile</th>
+                                        <th>Message Excerpt</th>
+                                        <th>Received At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inquiries-table-tbody">
+                                    <tr><td colspan="7" class="loading-state">Loading contact inquiries...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 5: NEWSLETTER SUBSCRIBERS
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-subscribers">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Newsletter Subscribers</h2>
+                            <p>Registered farmers subscribed to monthly crop care recommendations, seasonal discounts, and weather alerts.</p>
+                        </div>
+                        <div class="title-actions">
+                            <button class="btn btn-outline" id="copy-subscribers-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy Emails</span>
+                            </button>
+                            <button class="btn btn-primary" id="export-subscribers-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dash-card">
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th># ID</th>
+                                        <th>Subscriber Email Address</th>
+                                        <th>Subscription Status</th>
+                                        <th>Subscribed Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subscribers-table-tbody">
+                                    <tr><td colspan="5" class="loading-state">Loading subscribers...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 6: CROP ADVISORY INSIGHTS
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-advisory">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>AI Crop Advisor Intelligence & Trends</h2>
+                            <p>Real-time analytics gathered from farmer inquiries in the interactive Smart Crop Advisor tool.</p>
+                        </div>
+                        <div class="title-actions">
+                            <span class="badge badge-info" id="advisory-total-queries-badge">0 Queries Logged</span>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid-secondary">
+                        <!-- Top Crops Chart -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>Most Consulted Crops</h3>
+                                <span class="card-subtitle">Farmers requesting agronomy guidance</span>
+                            </div>
+                            <div class="advisory-bars-container" id="advisory-crops-container">
+                                <p class="loading-state">Loading crop query statistics...</p>
+                            </div>
+                        </div>
+
+                        <!-- Top Issues Chart -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>Common Agricultural Challenges</h3>
+                                <span class="card-subtitle">Pests, soil deficiencies, fungal issues</span>
+                            </div>
+                            <div class="advisory-bars-container" id="advisory-issues-container">
+                                <p class="loading-state">Loading problem category statistics...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Action Panel -->
+                    <div class="dash-card" style="margin-top: 24px;">
+                        <div class="dash-card-header">
+                            <h3>Agronomy Stocking & Advisory Recommendations</h3>
+                        </div>
+                        <div class="recommendation-cards-grid">
+                            <div class="rec-card">
+                                <div class="rec-icon">🐛</div>
+                                <h4>Pink Bollworm & Pest Surge Alert</h4>
+                                <p>Cotton and vegetable pest queries represent a significant portion of farmer requests. Keep <strong>Bio-Pesticide Neem Shield</strong> and <strong>Knapsack Sprayers</strong> amply stocked in the front catalog.</p>
+                            </div>
+                            <div class="rec-card">
+                                <div class="rec-icon">🧪</div>
+                                <h4>Soil Health & Acidity Care</h4>
+                                <p>Farmers frequently report pH imbalances during pre-sowing preparations. Feature <strong>Organic Vermicompost</strong> and <strong>3-in-1 Soil pH Meters</strong> in seasonal banner campaigns.</p>
+                            </div>
+                            <div class="rec-card">
+                                <div class="rec-icon">🌾</div>
+                                <h4>Tillering & Nutrient Boost</h4>
+                                <p>High demand for Nitrogen and Zinc supplements during jointing stages. Promote <strong>NPK 19:19:19</strong> and <strong>Crop Booster Liquid</strong> for foliar applications.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════
+                     TAB 7: SETTINGS & API CONFIGURATION
+                     ════════════════════════════════════════════════════════════ -->
+                <section class="tab-pane" id="pane-settings">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Portal Settings & System Integration</h2>
+                            <p>Configure backend API endpoints, change administrator credentials, and inspect database connectivity.</p>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid-secondary">
+                        <!-- API Connection Settings -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>REST API Backend Connection</h3>
+                            </div>
+                            <form id="settings-api-form" class="settings-form">
+                                <div class="form-group">
+                                    <label for="settings-api-url">API Base URL</label>
+                                    <input type="url" id="settings-api-url" value="http://localhost:3001/api" required>
+                                    <small class="form-hint">Default Express server runs at <code>http://localhost:3001/api</code>.</small>
+                                </div>
+
+                                <div class="settings-actions">
+                                    <button type="button" class="btn btn-outline" id="test-api-conn-btn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                        </svg>
+                                        <span>Ping Server Health</span>
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">Save API URL</button>
+                                </div>
+                                <div id="ping-result-box" class="ping-result-box" style="display: none;"></div>
+                            </form>
+                        </div>
+
+                        <!-- Admin Security Credentials -->
+                        <div class="dash-card">
+                            <div class="dash-card-header">
+                                <h3>Administrator Security</h3>
+                            </div>
+                            <form id="settings-pass-form" class="settings-form">
+                                <div class="form-group">
+                                    <label for="settings-admin-username">Admin Username</label>
+                                    <input type="text" id="settings-admin-username" placeholder="Admin username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="settings-new-pass">New Passcode</label>
+                                    <input type="password" id="settings-new-pass" placeholder="Enter new passcode" required>
+                                </div>
+                                <div class="settings-actions">
+                                    <button type="submit" class="btn btn-primary">Update Admin Password</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- System Info Panel -->
+                    <div class="dash-card" style="margin-top: 24px;">
+                        <div class="dash-card-header">
+                            <h3>Platform Information</h3>
+                        </div>
+                        <div class="sys-info-grid">
+                            <div class="sys-info-item">
+                                <span class="lbl">Platform:</span>
+                                <span class="val">MD Agro Services (MDagroconnect)</span>
+                            </div>
+                            <div class="sys-info-item">
+                                <span class="lbl">Database Engine:</span>
+                                <span class="val">MySQL 8.0 / 5.5+ (mdagroconnect)</span>
+                            </div>
+                            <div class="sys-info-item">
+                                <span class="lbl">API Architecture:</span>
+                                <span class="val">Node.js + Express REST API</span>
+                            </div>
+                            <div class="sys-info-item">
+                                <span class="lbl">Storage Strategy:</span>
+                                <span class="val">Live MySQL API with Resilient Local Fallback</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         MODALS
+         ════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Order Details & Printable Invoice Modal -->
+    <div class="admin-modal" id="order-details-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('order-details-modal')"></div>
+        <div class="admin-modal-card modal-lg">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-pre">Order Details</span>
+                    <h3 id="modal-order-title">Order #0</h3>
+                </div>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('order-details-modal')">&times;</button>
+            </div>
+            
+            <div class="modal-body" id="modal-order-content">
+                <!-- Injected dynamically -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="adminApp.printOrderReceipt()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Delivery Slip</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('order-details-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Product Modal -->
+    <div class="admin-modal" id="product-form-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('product-form-modal')"></div>
+        <div class="admin-modal-card">
+            <div class="modal-header">
+                <h3 id="product-modal-title">Add New Product</h3>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('product-form-modal')">&times;</button>
+            </div>
+
+            <form id="product-edit-form">
+                <div class="modal-body">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="prod-id">Product SKU / ID *</label>
+                            <input type="text" id="prod-id" placeholder="e.g. s5, f5, p4" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-category">Category *</label>
+                            <select id="prod-category" required>
+                                <option value="seeds">Seeds (बियाणे)</option>
+                                <option value="fertilizers">Fertilizers (खते)</option>
+                                <option value="protection">Crop Protection (कीटकनाशके)</option>
+                                <option value="tools">Tools & Sprayers (अवजारे)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prod-name">Product Name *</label>
+                        <input type="text" id="prod-name" placeholder="e.g. Certified Bt Cotton Seeds" required>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="prod-price">Price (₹) *</label>
+                            <input type="number" id="prod-price" min="0" step="0.5" placeholder="e.g. 450" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-unit">Unit of Measure *</label>
+                            <input type="text" id="prod-unit" placeholder="e.g. per kg, per 500ml" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prod-desc">Description</label>
+                        <textarea id="prod-desc" rows="3" placeholder="Explain germination rates, application instructions, and benefits..."></textarea>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="prod-image-key">Image Selector</label>
+                            <select id="prod-image-key">
+                                <option value="cotton-seed">Cotton Seed (Real Photo)</option>
+                                <option value="wheat-seed">Wheat Seed</option>
+                                <option value="corn-seed">Corn Seed</option>
+                                <option value="paddy-seed">Paddy Seed</option>
+                                <option value="vermicompost">Vermicompost Booster</option>
+                                <option value="npk">NPK 19:19:19 Soluble</option>
+                                <option value="liquid-booster">Crop Booster Liquid</option>
+                                <option value="micronutrient">Micronutrient Mix</option>
+                                <option value="neem-shield">Neem Shield Bio-Pesticide</option>
+                                <option value="fungicide">Systemic Fungicide</option>
+                                <option value="herbicide">Selective Herbicide</option>
+                                <option value="trowel">Ergonomic Hand Trowel</option>
+                                <option value="sprayer">Knapsack Sprayer</option>
+                                <option value="ph-meter">Soil pH & Moisture Meter</option>
+                                <option value="md-agro-store">MD Agro Krishi Mall Hub</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="prod-tags">Highlight Tags (comma-separated)</label>
+                            <input type="text" id="prod-tags" placeholder="e.g. Best Seller, High Yield">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="custom-checkbox-label">
+                            <input type="checkbox" id="prod-in-stock" checked>
+                            <span class="custom-check-box"></span>
+                            <span>Item is currently In Stock & Available for Order</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('product-form-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-product-submit-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inquiry Reader Modal -->
+    <div class="admin-modal" id="inquiry-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('inquiry-modal')"></div>
+        <div class="admin-modal-card">
+            <div class="modal-header">
+                <h3>Farmer Support Message</h3>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('inquiry-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="inquiry-modal-content">
+                <!-- Injected dynamically -->
+            </div>
+            <div class="modal-footer" id="inquiry-modal-footer">
+                <!-- Injected buttons (Reply Email, Call, Close) -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="admin-modal" id="confirm-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('confirm-modal')"></div>
+        <div class="admin-modal-card modal-sm">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title">Confirm Action</h3>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('confirm-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-msg">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('confirm-modal')">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-modal-ok-btn">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer / User Profile Details Modal -->
+    <div class="admin-modal" id="user-details-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('user-details-modal')"></div>
+        <div class="admin-modal-card modal-lg">
+            <div class="modal-header">
+                <div class="modal-title-wrap">
+                    <span class="modal-pre">Farmer Profile</span>
+                    <h3 id="modal-user-name">Farmer Name</h3>
+                </div>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('user-details-modal')">&times;</button>
+            </div>
+            
+            <div class="modal-body" id="modal-user-content">
+                <!-- Injected dynamically -->
+            </div>
+
+            <div class="modal-footer" id="modal-user-footer">
+                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('user-details-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Register Farmer Modal -->
+    <div class="admin-modal" id="user-form-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('user-form-modal')"></div>
+        <div class="admin-modal-card">
+            <div class="modal-header">
+                <h3>Register New Farmer / Customer</h3>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('user-form-modal')">&times;</button>
+            </div>
+
+            <form id="admin-user-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="new-farmer-name">Farmer Full Name *</label>
+                        <input type="text" id="new-farmer-name" placeholder="e.g. Ramesh Patil" required>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="new-farmer-phone">Mobile Phone (10 Digits) *</label>
+                            <input type="tel" id="new-farmer-phone" placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-farmer-email">Email Address</label>
+                            <input type="email" id="new-farmer-email" placeholder="e.g. ramesh@gmail.com">
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="new-farmer-location">Village / Taluka / District *</label>
+                            <input type="text" id="new-farmer-location" placeholder="e.g. Nashik, Maharashtra" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-farmer-pass">Initial Password</label>
+                            <input type="text" id="new-farmer-pass" value="farmer123" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('user-form-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-user-submit-btn">Save Farmer Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="admin-toast-container" id="admin-toast-container"></div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

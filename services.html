@@ -6,6 +6,14 @@
     <meta name="description" content="Seasonal crop guides for Kharif, Rabi, and Summer farming cycles along with soil testing and agronomy field services.">
     <title>Seasonal Guides & Services | MD Agro Services</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('md_theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 <body>
 
@@ -29,6 +37,38 @@
             </nav>
             
             <div class="header-actions">
+                <div id="user-header-auth-container" class="user-auth-header-wrap">
+                    <button class="user-login-btn" id="btn-open-auth-gateway" title="Farmer / Customer Login">
+                        <span>👤 Sign In / Register</span>
+                    </button>
+                </div>
+
+                <a href="admin.html" class="admin-header-btn" title="Open Store Admin Dashboard">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Admin</span>
+                </a>
+
+                <!-- Theme Toggle Button (Light/Dark Mode) -->
+                <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Light and Dark Mode" title="Toggle Light/Dark Theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+
                 <button class="cart-toggle-btn" id="cart-toggle" aria-label="Shopping Cart">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="9" cy="21" r="1"></circle>
@@ -106,7 +146,7 @@
     </section>
 
     <!-- Comprehensive Agronomy Services Section -->
-    <section class="section" style="background-color: #f0f4f2;">
+    <section class="section section-tinted">
         <div class="container">
             <div class="section-header">
                 <h2>Our Professional Agronomy Services</h2>
@@ -167,6 +207,7 @@
                     <li><a href="advisor.html">AI Crop Advisor</a></li>
                     <li><a href="services.html">Seasonal Guides</a></li>
                     <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="admin.html" style="color: #a7f3d0; font-weight: 600;">🔐 Admin Portal</a></li>
                 </ul>
             </div>
             
@@ -189,8 +230,9 @@
         </div>
         
         <div class="footer-bottom">
-            <div class="container">
-                <p>&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
+            <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <p style="margin: 0;">&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
+                <a href="admin.html" style="color: rgba(255,255,255,0.45); font-size: 0.82rem; text-decoration: none;" title="Store Manager & Staff Login">🔐 Staff / Admin Portal</a>
             </div>
         </div>
     </footer>
@@ -281,6 +323,133 @@
                     </svg>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         ENTRY AUTHENTICATION GATEWAY MODAL (USER & ADMIN)
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="auth-gateway-modal" id="auth-gateway-modal">
+        <div class="auth-gateway-backdrop" id="auth-gateway-backdrop"></div>
+        <div class="auth-gateway-card">
+            <button class="gateway-close-btn" id="btn-close-gateway" aria-label="Close">&times;</button>
+            
+            <div class="gateway-header">
+                <div class="gateway-brand">
+                    <span class="gw-leaf">🌱</span>
+                    <span class="gw-title">MD AGRO CONNECT</span>
+                </div>
+                <h3>Welcome to Krishi Mall</h3>
+                <p>Select your portal to continue with agricultural shopping or store administration.</p>
+                
+                <div class="gateway-tabs">
+                    <button class="gw-tab active" data-portal="farmer">👨‍🌾 Farmer / Customer</button>
+                    <button class="gw-tab" data-portal="admin">🔐 Administrator</button>
+                </div>
+            </div>
+
+            <div class="gateway-body">
+                <!-- FARMER PORTAL VIEW -->
+                <div class="portal-pane active" id="portal-pane-farmer">
+                    <div class="auth-sub-switch">
+                        <button class="sub-switch-btn active" id="btn-farmer-mode-login">Sign In</button>
+                        <button class="sub-switch-btn" id="btn-farmer-mode-register">New Farmer Registration</button>
+                    </div>
+
+                    <!-- Farmer Login Form -->
+                    <form id="farmer-login-form" class="gateway-form">
+                        <div class="gw-form-group">
+                            <label for="farmer-login-phone">Mobile Number or Email</label>
+                            <input type="text" id="farmer-login-phone" placeholder="Enter 10-digit mobile or email" required>
+                        </div>
+                        <div class="gw-form-group">
+                            <label for="farmer-login-pass">Password</label>
+                            <input type="password" id="farmer-login-pass" placeholder="Enter your password" required>
+                        </div>
+                        <div id="farmer-login-error" class="gw-error" style="display:none;"></div>
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-farmer-login-submit">
+                            <span>Sign In to MD Agro</span>
+                        </button>
+                    </form>
+
+                    <!-- Farmer Register Form -->
+                    <form id="farmer-register-form" class="gateway-form" style="display:none;">
+                        <div class="gw-form-group">
+                            <label for="farmer-reg-name">Full Name *</label>
+                            <input type="text" id="farmer-reg-name" placeholder="e.g. Ramesh Patil" required>
+                        </div>
+                        <div class="gw-form-row">
+                            <div class="gw-form-group">
+                                <label for="farmer-reg-phone">Mobile Number *</label>
+                                <input type="tel" id="farmer-reg-phone" placeholder="10-digit mobile" pattern="[6-9][0-9]{9}" required>
+                            </div>
+                            <div class="gw-form-group">
+                                <label for="farmer-reg-email">Email (Optional)</label>
+                                <input type="email" id="farmer-reg-email" placeholder="email@gmail.com">
+                            </div>
+                        </div>
+                        <div class="gw-form-row">
+                            <div class="gw-form-group">
+                                <label for="farmer-reg-location">Village / Taluka / District *</label>
+                                <input type="text" id="farmer-reg-location" placeholder="e.g. Nashik, Maharashtra" required>
+                            </div>
+                            <div class="gw-form-group">
+                                <label for="farmer-reg-pass">Create Password *</label>
+                                <input type="password" id="farmer-reg-pass" placeholder="Min. 4 characters" minlength="4" required>
+                            </div>
+                        </div>
+                        <div id="farmer-reg-error" class="gw-error" style="display:none;"></div>
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-farmer-reg-submit">
+                            <span>Create Farmer Account</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ADMIN PORTAL VIEW -->
+                <div class="portal-pane" id="portal-pane-admin">
+                    <div class="admin-quick-card">
+                        <div class="admin-badge-strip">
+                            <span>🛡️ MD Agro Official Administration</span>
+                        </div>
+                        <p>Authorized access for store management, orders processing, catalog updates, and farmer customer logs.</p>
+                        <form id="gw-admin-login-form" class="gateway-form">
+                            <div class="gw-form-group">
+                                <label for="gw-admin-user">Admin Username</label>
+                                <input type="text" id="gw-admin-user" placeholder="Enter admin username" required autocomplete="username">
+                            </div>
+                            <div class="gw-form-group">
+                                <label for="gw-admin-pass">Admin Password</label>
+                                <input type="password" id="gw-admin-pass" placeholder="Enter admin password" required autocomplete="current-password">
+                            </div>
+                            <div id="gw-admin-error" class="gw-error" style="display:none;"></div>
+                            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-gw-admin-submit">
+                                <span>Enter Store Admin Dashboard ➔</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gateway-footer">
+                <button type="button" class="btn-guest-link" id="btn-continue-guest">
+                    🌾 Continue Browsing Products as Guest
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer "My Orders" Modal -->
+    <div class="auth-gateway-modal" id="my-orders-modal">
+        <div class="auth-gateway-backdrop" onclick="document.getElementById('my-orders-modal').classList.remove('active')"></div>
+        <div class="auth-gateway-card modal-my-orders">
+            <button class="gateway-close-btn" onclick="document.getElementById('my-orders-modal').classList.remove('active')">&times;</button>
+            <div class="gateway-header">
+                <h3>📦 My Placed Orders</h3>
+                <p id="my-orders-subtitle">Orders linked to your registered mobile number.</p>
+            </div>
+            <div class="gateway-body" id="my-orders-content">
+                <!-- Injected dynamically -->
+            </div>
         </div>
     </div>
 

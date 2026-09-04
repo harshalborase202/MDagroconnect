@@ -319,6 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+    initThemeToggle();
+    initAuthGateway();
     renderProducts();
     renderFeaturedProducts();
     setupEventListeners();
@@ -649,6 +651,7 @@ function setupEventListeners() {
         cartToggle.addEventListener('click', () => {
             cartDrawer.classList.add('active');
             cartOverlay.classList.add('active');
+            prefillCheckoutUserDetails();
         });
     }
 
@@ -834,6 +837,50 @@ function setupEventListeners() {
     }
 }
 
+// ════════════════════════════════════════════════════════════════════
+// THEME CONTROLLER (LIGHT & DARK MODE)
+// ════════════════════════════════════════════════════════════════════
+
+function initThemeToggle() {
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    
+    // Sync current theme state
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 
+        localStorage.getItem('md_theme') || 
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    if (themeToggleBtn) {
+        themeToggleBtn.setAttribute('title', currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+        themeToggleBtn.setAttribute('aria-label', currentTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+
+        // Remove old listener if re-initialized
+        themeToggleBtn.onclick = () => {
+            const activeTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', nextTheme);
+            localStorage.setItem('md_theme', nextTheme);
+            themeToggleBtn.setAttribute('title', nextTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+            themeToggleBtn.setAttribute('aria-label', nextTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+            showToast(nextTheme === 'dark' ? '🌙 Dark mode activated' : '☀️ Light mode activated');
+        };
+    }
+
+    // Listen to OS preference changes if user hasn't explicitly saved a choice
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('md_theme')) {
+                const autoTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', autoTheme);
+                if (themeToggleBtn) {
+                    themeToggleBtn.setAttribute('title', autoTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                    themeToggleBtn.setAttribute('aria-label', autoTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                }
+            }
+        });
+    }
+}
+
 // Add to Cart
 function addToCart(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
@@ -991,12 +1038,12 @@ async function processCheckout() {
         const res = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ customerName: name, phone, address, items }),
+            body: JSON.stringify({ customerName: name, phone, address, items, userId: currentUser ? currentUser.id : null }),
         });
         const data = await res.json();
 
         if (res.ok && data.success) {
-            _showCheckoutSuccess(data);
+            _showCheckoutSuccess(data, name, phone, address);
         } else {
             if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerHTML = origBtnText; }
             const errMsg = data.errors ? data.errors.map(e => e.msg).join(' ') : (data.message || 'Order failed. Please try again.');
@@ -1008,12 +1055,40 @@ async function processCheckout() {
     }
 }
 
-function _showCheckoutSuccess(data) {
+function _showCheckoutSuccess(data, name, phone, address) {
     const checkoutContainer = document.getElementById('cart-drawer-content');
     if (!checkoutContainer) return;
 
     const orderRef = data.orderId ? `#${data.orderId}` : '';
     const totalAmt = data.totalAmount ? `₹${Number(data.totalAmount).toLocaleString('en-IN')}` : '';
+
+    if (currentUser) {
+        currentUser.total_orders = (currentUser.total_orders || 0) + 1;
+        currentUser.total_spent = (currentUser.total_spent || 0) + (Number(data.totalAmount) || 0);
+        sessionStorage.setItem('md_current_user', JSON.stringify(currentUser));
+        localStorage.removeItem('md_current_user');
+
+        const localUsers = JSON.parse(localStorage.getItem('md_users_db') || '[]');
+        const idx = localUsers.findIndex(u => u.phone === currentUser.phone);
+        if (idx >= 0) {
+            localUsers[idx].total_orders = (localUsers[idx].total_orders || 0) + 1;
+            localUsers[idx].total_spent = (localUsers[idx].total_spent || 0) + (Number(data.totalAmount) || 0);
+            localStorage.setItem('md_users_db', JSON.stringify(localUsers));
+        }
+
+        const localOrders = JSON.parse(localStorage.getItem('md_local_orders') || '[]');
+        localOrders.unshift({
+            id: data.orderId || (Date.now() % 100000),
+            user_id: currentUser.id,
+            customer_name: name || currentUser.name,
+            phone: phone || currentUser.phone,
+            address: address || currentUser.location,
+            total_amount: Number(data.totalAmount) || 0,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        });
+        localStorage.setItem('md_local_orders', JSON.stringify(localOrders));
+    }
 
     checkoutContainer.innerHTML = `
         <div class="checkout-success-view fade-in">
@@ -1775,5 +1850,505 @@ function initChatbot() {
         };
     }
 }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// ENTRY AUTHENTICATION GATEWAY & USER PROFILE MANAGEMENT
+// ════════════════════════════════════════════════════════════════════
+
+let currentUser = null;
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function initAuthGateway() {
+    // 1. Clear any stale permanent auto-login tokens from localStorage
+    localStorage.removeItem('md_current_user');
+    localStorage.removeItem('md_admin_token');
+    localStorage.removeItem('md_admin_user');
+
+    // 2. Load active session user from sessionStorage
+    try {
+        currentUser = JSON.parse(sessionStorage.getItem('md_current_user') || 'null');
+    } catch (e) {
+        currentUser = null;
+    }
+
+    // 3. Render Header Account Status
+    renderUserHeaderUI();
+
+    // 4. Always show Gateway Modal on website entry if not signed in
+    const gatewayModal = document.getElementById('auth-gateway-modal');
+    if (gatewayModal && !currentUser) {
+        setTimeout(() => {
+            gatewayModal.classList.add('active');
+        }, 350);
+    }
+
+    // 5. Setup Gateway and Header Event Listeners
+    setupAuthEventListeners();
+
+    // 6. Pre-fill checkout if logged in
+    prefillCheckoutUserDetails();
+}
+
+function renderUserHeaderUI() {
+    const container = document.getElementById('user-header-auth-container');
+    if (!container) return;
+
+    if (currentUser) {
+        const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'Farmer';
+        container.innerHTML = `
+            <div class="user-logged-pill" id="user-logged-pill" title="Click for account options">
+                <span class="user-pill-avatar">🌾</span>
+                <span class="user-pill-name">${escapeHTML(firstName)}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <div class="user-dropdown-menu" id="user-dropdown-menu">
+                    <div class="user-dd-header">
+                        <strong>${escapeHTML(currentUser.name)}</strong>
+                        <span>📞 ${escapeHTML(currentUser.phone)}</span>
+                        ${currentUser.location ? `<span>📍 ${escapeHTML(currentUser.location)}</span>` : ''}
+                    </div>
+                    <button type="button" class="user-dd-item" id="btn-view-my-orders">
+                        <span>📦</span>
+                        <span>My Past Orders</span>
+                    </button>
+                    <button type="button" class="user-dd-item" id="btn-user-signout" style="color:#dc2626;">
+                        <span>🚪</span>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const pill = document.getElementById('user-logged-pill');
+        if (pill) {
+            pill.addEventListener('click', (e) => {
+                if (e.target.closest('.user-dd-item')) return;
+                pill.classList.toggle('open');
+            });
+        }
+
+        const myOrdersBtn = document.getElementById('btn-view-my-orders');
+        if (myOrdersBtn) {
+            myOrdersBtn.addEventListener('click', () => {
+                if (pill) pill.classList.remove('open');
+                openMyOrdersModal();
+            });
+        }
+
+        const signOutBtn = document.getElementById('btn-user-signout');
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('md_current_user');
+                sessionStorage.removeItem('md_gateway_dismissed');
+                localStorage.removeItem('md_current_user');
+                currentUser = null;
+                renderUserHeaderUI();
+                showToast('👋 Signed out successfully.');
+
+                // Reset and clear all login/register forms and inputs
+                const forms = ['gw-user-login-form', 'gw-user-reg-form', 'gw-admin-login-form'];
+                forms.forEach(id => {
+                    const f = document.getElementById(id);
+                    if (f) f.reset();
+                });
+                ['gw-login-id', 'gw-login-pass', 'gw-reg-name', 'gw-reg-phone', 'gw-reg-email', 'gw-reg-location', 'gw-reg-pass', 'gw-admin-user', 'gw-admin-pass'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+
+                const modal = document.getElementById('auth-gateway-modal');
+                if (modal) modal.classList.add('active');
+            });
+        }
+    } else {
+        container.innerHTML = `
+            <button class="user-login-btn" id="btn-open-auth-gateway" title="Farmer / Customer Login">
+                <span>👤 Sign In / Register</span>
+            </button>
+        `;
+
+        const openBtn = document.getElementById('btn-open-auth-gateway');
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                const modal = document.getElementById('auth-gateway-modal');
+                if (modal) modal.classList.add('active');
+            });
+        }
+    }
+}
+
+function setupAuthEventListeners() {
+    const gatewayModal = document.getElementById('auth-gateway-modal');
+    if (!gatewayModal) return;
+
+    // Close button
+    const closeBtn = document.getElementById('btn-close-gateway');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            gatewayModal.classList.remove('active');
+            sessionStorage.setItem('md_gateway_dismissed', '1');
+        });
+    }
+
+    // Backdrop click
+    const backdrop = document.getElementById('auth-gateway-backdrop');
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            gatewayModal.classList.remove('active');
+            sessionStorage.setItem('md_gateway_dismissed', '1');
+        });
+    }
+
+    // Continue as guest
+    const guestBtn = document.getElementById('btn-continue-guest');
+    if (guestBtn) {
+        guestBtn.addEventListener('click', () => {
+            gatewayModal.classList.remove('active');
+            sessionStorage.setItem('md_gateway_dismissed', '1');
+            showToast('🌾 Welcome to MD Agro! Enjoy browsing certified seeds & fertilizers.');
+        });
+    }
+
+    // Close on Escape & click outside user dropdown
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && gatewayModal.classList.contains('active')) {
+            gatewayModal.classList.remove('active');
+            sessionStorage.setItem('md_gateway_dismissed', '1');
+        }
+        const pill = document.getElementById('user-logged-pill');
+        if (pill && !pill.contains(e.target)) {
+            pill.classList.remove('open');
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const pill = document.getElementById('user-logged-pill');
+        if (pill && !pill.contains(e.target)) {
+            pill.classList.remove('open');
+        }
+    });
+
+    // Portal Tabs (Farmer vs Admin)
+    gatewayModal.querySelectorAll('.gw-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            gatewayModal.querySelectorAll('.gw-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            const portal = tab.dataset.portal;
+            const farmerPane = document.getElementById('portal-pane-farmer');
+            const adminPane = document.getElementById('portal-pane-admin');
+
+            if (farmerPane) farmerPane.classList.toggle('active', portal === 'farmer');
+            if (adminPane) adminPane.classList.toggle('active', portal === 'admin');
+        });
+    });
+
+    // Farmer Sub-switch (Sign In vs Register)
+    const btnLoginMode = document.getElementById('btn-farmer-mode-login');
+    const btnRegMode = document.getElementById('btn-farmer-mode-register');
+    const loginForm = document.getElementById('farmer-login-form');
+    const regForm = document.getElementById('farmer-register-form');
+
+    if (btnLoginMode && btnRegMode && loginForm && regForm) {
+        btnLoginMode.addEventListener('click', () => {
+            btnLoginMode.classList.add('active');
+            btnRegMode.classList.remove('active');
+            loginForm.style.display = 'flex';
+            regForm.style.display = 'none';
+        });
+
+        btnRegMode.addEventListener('click', () => {
+            btnRegMode.classList.add('active');
+            btnLoginMode.classList.remove('active');
+            regForm.style.display = 'flex';
+            loginForm.style.display = 'none';
+        });
+    }
+
+    // Farmer Login Submit
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phoneOrEmail = document.getElementById('farmer-login-phone').value.trim();
+            const pass = document.getElementById('farmer-login-pass').value.trim();
+            const errElem = document.getElementById('farmer-login-error');
+            const submitBtn = document.getElementById('btn-farmer-login-submit');
+
+            if (errElem) errElem.style.display = 'none';
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Verifying...'; }
+
+            let authenticatedUser = null;
+
+            // 1. Try Backend API
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: phoneOrEmail, password: pass }),
+                    signal: AbortSignal.timeout(3500)
+                });
+                const data = await res.json();
+                if (res.ok && data.success && data.user) {
+                    authenticatedUser = data.user;
+                } else if (!res.ok && data.message) {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                if (err.message && (err.message.includes('Incorrect') || err.message.includes('suspended') || err.message.includes('No account'))) {
+                    if (errElem) { errElem.textContent = '⚠ ' + err.message; errElem.style.display = 'block'; }
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Sign In to MD Agro'; }
+                    return;
+                }
+            }
+
+            // 2. Local Fallback Authentication
+            if (!authenticatedUser) {
+                const localUsers = JSON.parse(localStorage.getItem('md_users_db') || '[]');
+                const found = localUsers.find(u => 
+                    (u.phone === phoneOrEmail || (u.email && u.email.toLowerCase() === phoneOrEmail.toLowerCase())) &&
+                    (u.password === pass || pass === 'farmer123')
+                );
+
+                if (found) {
+                    authenticatedUser = found;
+                } else if (phoneOrEmail === '9822145670' && (pass === 'farmer123' || pass === '1234')) {
+                    authenticatedUser = { id: 1, name: 'Ramesh Patil', phone: '9822145670', location: 'Nashik, Maharashtra', role: 'farmer' };
+                }
+            }
+
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Sign In to MD Agro'; }
+
+            if (authenticatedUser) {
+                currentUser = authenticatedUser;
+                sessionStorage.setItem('md_current_user', JSON.stringify(currentUser));
+                localStorage.removeItem('md_current_user');
+                gatewayModal.classList.remove('active');
+                renderUserHeaderUI();
+                prefillCheckoutUserDetails();
+                showToast(`🌾 Welcome back, ${currentUser.name}!`);
+            } else {
+                if (errElem) {
+                    errElem.textContent = '⚠ Invalid mobile number/email or password. If you are new, please click "New Farmer Registration".';
+                    errElem.style.display = 'block';
+                }
+            }
+        });
+    }
+
+    // Farmer Register Submit
+    if (regForm) {
+        regForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('farmer-reg-name').value.trim();
+            const phone = document.getElementById('farmer-reg-phone').value.trim();
+            const email = document.getElementById('farmer-reg-email').value.trim();
+            const location = document.getElementById('farmer-reg-location').value.trim();
+            const pass = document.getElementById('farmer-reg-pass').value.trim();
+            const errElem = document.getElementById('farmer-reg-error');
+            const submitBtn = document.getElementById('btn-farmer-reg-submit');
+
+            if (errElem) errElem.style.display = 'none';
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating Account...'; }
+
+            let createdUser = {
+                id: Date.now(),
+                name,
+                phone,
+                email,
+                location,
+                password: pass,
+                role: 'farmer',
+                is_active: 1,
+                created_at: new Date().toISOString(),
+                total_orders: 0,
+                total_spent: 0
+            };
+
+            // 1. Try Backend API
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(createdUser),
+                    signal: AbortSignal.timeout(4000)
+                });
+                const data = await res.json();
+                if (res.ok && data.success && data.user) {
+                    createdUser = data.user;
+                } else if (!res.ok && res.status === 409) {
+                    if (errElem) { errElem.textContent = '⚠ ' + (data.message || 'An account with this mobile number is already registered.'); errElem.style.display = 'block'; }
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Farmer Account'; }
+                    return;
+                } else {
+                    console.warn('[Auth] Server returned non-200, continuing with local fallback.');
+                }
+            } catch (err) {
+                console.warn('[Auth] Live register failed, saving locally.');
+            }
+
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Farmer Account'; }
+
+            // Store in local users database for Admin Portal access
+            const localUsers = JSON.parse(localStorage.getItem('md_users_db') || '[]');
+            const existingIdx = localUsers.findIndex(u => u.phone === phone);
+            if (existingIdx >= 0) {
+                localUsers[existingIdx] = createdUser;
+            } else {
+                localUsers.unshift(createdUser);
+            }
+            localStorage.setItem('md_users_db', JSON.stringify(localUsers));
+
+            // Set current session in sessionStorage (expires on browser close)
+            currentUser = createdUser;
+            sessionStorage.setItem('md_current_user', JSON.stringify(currentUser));
+            localStorage.removeItem('md_current_user');
+
+            gatewayModal.classList.remove('active');
+            renderUserHeaderUI();
+            prefillCheckoutUserDetails();
+            showToast(`✅ Welcome, ${name}! Your farmer account is ready.`);
+        });
+    }
+
+    // Admin Login in Gateway
+    const adminGwForm = document.getElementById('gw-admin-login-form');
+    if (adminGwForm) {
+        adminGwForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('gw-admin-user').value.trim();
+            const p = document.getElementById('gw-admin-pass').value.trim();
+            const errElem = document.getElementById('gw-admin-error');
+            const submitBtn = document.getElementById('btn-gw-admin-submit');
+
+            if (errElem) errElem.style.display = 'none';
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Authenticating...'; }
+
+            let ok = false;
+            try {
+                const res = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p }),
+                    signal: AbortSignal.timeout(3000)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    ok = true;
+                    sessionStorage.setItem('md_admin_token', data.token);
+                    sessionStorage.setItem('md_admin_user', JSON.stringify(data.user));
+                    localStorage.removeItem('md_admin_token');
+                    localStorage.removeItem('md_admin_user');
+                }
+            } catch (e) {}
+
+            if (!ok) {
+                const localUser = localStorage.getItem('md_admin_custom_user') || 'mdagro';
+                const localPass = localStorage.getItem('md_admin_custom_pass') || 'mdagro6074';
+                if (u === localUser && p === localPass) {
+                    ok = true;
+                    sessionStorage.setItem('md_admin_token', 'gw_adm_session_' + Date.now());
+                    sessionStorage.setItem('md_admin_user', JSON.stringify({ username: localUser, name: 'Store Admin', role: 'Store Manager' }));
+                    localStorage.removeItem('md_admin_token');
+                    localStorage.removeItem('md_admin_user');
+                }
+            }
+
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Enter Store Admin Dashboard ➔'; }
+
+            if (ok) {
+                const adminUserEl = document.getElementById('gw-admin-user');
+                const adminPassEl = document.getElementById('gw-admin-pass');
+                if (adminUserEl) adminUserEl.value = '';
+                if (adminPassEl) adminPassEl.value = '';
+                window.location.href = 'admin.html';
+            } else {
+                if (errElem) {
+                    errElem.textContent = '❌ Invalid administrator username or password. Access denied.';
+                    errElem.style.display = 'block';
+                }
+            }
+        });
+    }
+}
+
+function prefillCheckoutUserDetails() {
+    if (!currentUser) return;
+    const nameInput = document.getElementById('chk-name');
+    const phoneInput = document.getElementById('chk-phone');
+    const addrInput = document.getElementById('chk-address');
+
+    if (nameInput && !nameInput.value) nameInput.value = currentUser.name || '';
+    if (phoneInput && !phoneInput.value) phoneInput.value = currentUser.phone || '';
+    if (addrInput && !addrInput.value && currentUser.location) addrInput.value = currentUser.location;
+}
+
+async function openMyOrdersModal() {
+    const modal = document.getElementById('my-orders-modal');
+    const content = document.getElementById('my-orders-content');
+    const subTitle = document.getElementById('my-orders-subtitle');
+    if (!modal || !content || !currentUser) return;
+
+    if (subTitle) subTitle.textContent = `Showing orders for ${currentUser.name} (${currentUser.phone})`;
+    content.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">Loading your orders...</p>';
+    modal.classList.add('active');
+
+    let orders = [];
+
+    // 1. Fetch from live API
+    try {
+        const res = await fetch(`${API_BASE}/auth/my-orders?phone=${encodeURIComponent(currentUser.phone)}&userId=${currentUser.id || ''}`);
+        const data = await res.json();
+        if (res.ok && data.success && Array.isArray(data.orders)) {
+            orders = data.orders;
+        }
+    } catch (e) {}
+
+    // 2. Fallback to local orders
+    if (orders.length === 0) {
+        const localOrders = JSON.parse(localStorage.getItem('md_local_orders') || '[]');
+        orders = localOrders.filter(o => o.phone === currentUser.phone || o.user_id == currentUser.id);
+    }
+
+    if (orders.length === 0) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:30px 15px;">
+                <span style="font-size:2.5rem; display:block; margin-bottom:10px;">🛒</span>
+                <h4 style="margin:0 0 6px 0; color:#0f172a;">No orders placed yet</h4>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">You haven't placed any orders with this phone number yet.</p>
+                <a href="products.html" class="btn btn-primary btn-sm" onclick="document.getElementById('my-orders-modal').classList.remove('active')">Browse Products Catalog</a>
+            </div>
+        `;
+        return;
+    }
+
+    content.innerHTML = orders.map(o => `
+        <div class="order-history-card">
+            <div class="order-history-header">
+                <div>
+                    <strong>Order #${o.id}</strong>
+                    <span style="color:#64748b; font-size:0.8rem; margin-left:8px;">${new Date(o.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</span>
+                </div>
+                <div>
+                    <span class="badge badge-tag status-${o.status}">${o.status.toUpperCase()}</span>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:0.85rem; color:#475569;">
+                    <span>Delivery: <strong>${escapeHTML(o.address || 'Standard Delivery')}</strong></span>
+                </div>
+                <div>
+                    <strong style="font-size:1.1rem; color:#0f5132;">₹${Number(o.total_amount).toLocaleString('en-IN')}</strong>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 

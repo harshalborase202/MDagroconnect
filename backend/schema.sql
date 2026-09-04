@@ -29,10 +29,28 @@ CREATE TABLE IF NOT EXISTS products (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -------------------------------------------------------------
--- 2. orders
+-- 2. users (registered farmers and customers)
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS users (
+  id          INT UNSIGNED   NOT NULL AUTO_INCREMENT,
+  name        VARCHAR(120)   NOT NULL,
+  phone       VARCHAR(20)    NOT NULL,
+  email       VARCHAR(180)   DEFAULT '',
+  password    VARCHAR(255)   NOT NULL,
+  location    VARCHAR(120)   DEFAULT '',
+  role        VARCHAR(20)    NOT NULL DEFAULT 'farmer',
+  is_active   TINYINT(1)     NOT NULL DEFAULT 1,
+  created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_phone (phone)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- -------------------------------------------------------------
+-- 3. orders
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS orders (
   id              INT UNSIGNED   NOT NULL AUTO_INCREMENT,
+  user_id         INT UNSIGNED   DEFAULT NULL,
   customer_name   VARCHAR(120)   NOT NULL,
   phone           VARCHAR(20)    NOT NULL,
   address         TEXT           NOT NULL,
@@ -40,11 +58,12 @@ CREATE TABLE IF NOT EXISTS orders (
   status          VARCHAR(20)    NOT NULL DEFAULT 'pending',
   notes           TEXT,
   created_at      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  INDEX idx_orders_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -------------------------------------------------------------
--- 3. order_items  (line_total stored as plain column, computed in app)
+-- 4. order_items  (line_total stored as plain column, computed in app)
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS order_items (
   id            INT UNSIGNED   NOT NULL AUTO_INCREMENT,
