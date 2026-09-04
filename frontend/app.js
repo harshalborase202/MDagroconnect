@@ -1,5 +1,12 @@
 // MD Agro Services - Application JavaScript
 
+// Load optional local config.js (contains local API keys if running standalone)
+if (typeof window !== 'undefined' && !window.GEMINI_API_KEY) {
+    const _cfg = document.createElement('script');
+    _cfg.src = 'config.js';
+    document.head.appendChild(_cfg);
+}
+
 // Product Catalog Database
 const PRODUCTS = [
     {
@@ -1239,7 +1246,7 @@ function showToast(message) {
     }, 2500);
 }
 
-// AI Agronomist Chatbot Logic
+// AI Agronomist Chatbot Logic — Powered by Google Gemini AI & Local Knowledge Base
 function initChatbot() {
     const chatbotToggle = document.getElementById('chatbot-toggle');
     const chatbotContainer = document.getElementById('chatbot-container');
@@ -1250,6 +1257,23 @@ function initChatbot() {
     const quickReplies = document.querySelector('.quick-replies');
 
     if (!chatbotToggle || !chatbotContainer || !chatbotClose || !chatForm || !chatInput || !chatMessages) return;
+
+    // Google Gemini API Configuration
+    // Uses backend proxy (/api/chat) or window.GEMINI_API_KEY (from local config.js)
+    const GEMINI_API_KEY = window.GEMINI_API_KEY || '';
+    const GEMINI_ENDPOINT = GEMINI_API_KEY ?
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=' + GEMINI_API_KEY : '';
+
+    const SYSTEM_PROMPT = `You are MD Agro Smart Agronomist, a friendly and practical agricultural assistant for MD Agro Connect (एम. डी. अँग्रो सर्व्हिसेस).
+Your mission is to provide simple, crisp, and farmer-friendly advice.
+Guidelines:
+1. Keep answers SHORT, CRISP, and SIMPLE (2 to 3 bullet points, under 60 words total). Avoid long paragraphs and scientific jargon.
+2. Give actionable farming steps (e.g. soil treatment, pest spray, irrigation timing).
+3. Recommend suitable MD Agro products when relevant (e.g. Organic Vermicompost, NPK 19:19:19, Neem Shield Bio-Pesticide, Fungicide Cure-All, Selective Herbicide, Knapsack Sprayer, 3-in-1 Soil pH Meter, Hybrid Seeds).
+4. Reply in the farmer's language (Marathi, Hindi, or English).
+5. Be warm, supportive, and respectful.`;
+
+    let chatHistory = [];
 
     // Delegate click on Add-to-cart buttons inside chatbot messages
     chatMessages.addEventListener('click', (e) => {
@@ -1489,20 +1513,159 @@ function initChatbot() {
         sendMessage(text);
     });
 
-    function sendMessage(text) {
+    async function queryGemini(userText) {
+        // 1. Try local Express backend proxy first if available
+        try {
+            const backendRes = await fetch('http://localhost:3001/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userText, history: chatHistory })
+            });
+            if (backendRes.ok) {
+                const data = await backendRes.json();
+                if (data.success && data.reply) {
+                    return { text: data.reply, products: data.products || [] };
+                }
+            }
+        } catch (e) {
+            // Backend offline or unreachable, fall back to direct Gemini API call
+        }
+
+        // 2. Direct Google Gemini API call
+        const contents = [];
+        chatHistory.slice(-4).forEach(turn => {
+            contents.push({
+                role: turn.role === 'bot' ? 'model' : 'user',
+                parts: [{ text: turn.text }]
+            });
+        });
+        contents.push({
+            role: 'user',
+            parts: [{ text: userText }]
+        });
+
+        const res = await fetch(GEMINI_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                contents: contents,
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 400
+                }
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`Gemini HTTP error ${res.status}`);
+        }
+
+        const data = await res.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) {
+            throw new Error('Empty response from Gemini');
+        }
+        return { text };
+    }
+
+    function findRelevantProducts(text) {
+        const lower = text.toLowerCase();
+        const matched = [];
+        if (typeof PRODUCTS !== 'undefined' && Array.isArray(PRODUCTS)) {
+            for (const p of PRODUCTS) {
+                const nameLower = p.name.toLowerCase();
+                if (
+                    lower.includes(nameLower) ||
+                    (lower.includes('vermicompost') && p.id === 'f1') ||
+                    (lower.includes('npk') && p.id === 'f2') ||
+                    (lower.includes('neem') && p.id === 'p1') ||
+                    (lower.includes('fungicide') && p.id === 'p2') ||
+                    (lower.includes('herbicide') && p.id === 'p3') ||
+                    (lower.includes('sprayer') && p.id === 't2') ||
+                    (lower.includes('ph') && p.id === 't3') ||
+                    (lower.includes('booster') && p.id === 'f3') ||
+                    (lower.includes('micronutrient') && p.id === 'f4')
+                ) {
+                    if (!matched.some(m => m.id === p.id)) {
+                        matched.push(p);
+                    }
+                }
+                if (matched.length >= 2) break;
+            }
+        }
+        return matched;
+    }
+
+    function generateDynamicPills(aiText, userQuery) {
+        const combined = (aiText + ' ' + userQuery).toLowerCase();
+        const pills = [];
+        if (combined.includes('cotton') || combined.includes('kapas')) {
+            pills.push('Buy Neem Shield', 'NPK 19:19:19', 'Soil pH Meter');
+        } else if (combined.includes('wheat') || combined.includes('gehun')) {
+            pills.push('Vermicompost', 'Fungicide Cure-All', 'Sprayer Pump');
+        } else if (combined.includes('paddy') || combined.includes('rice') || combined.includes('dhan')) {
+            pills.push('Micronutrient Mix', 'Neem Shield', 'Paddy Seeds');
+        } else if (combined.includes('fung') || combined.includes('spot') || combined.includes('yellow') || combined.includes('cure')) {
+            pills.push('Fungicide Cure-All', 'NPK 19:19:19', 'Soil Test');
+        } else if (combined.includes('price') || combined.includes('cost') || combined.includes('rate') || combined.includes('buy')) {
+            pills.push('Seeds Catalog', 'Fertilizers List', 'Tools');
+        } else {
+            pills.push('Cotton Care', 'Best Fertilizer', 'Soil Test', 'Delivery Time');
+        }
+        return pills.slice(0, 4);
+    }
+
+    async function sendMessage(text) {
         appendMessage('user', text);
+        chatHistory.push({ role: 'user', text });
 
         // Show Typing Indicator
         const typingId = showTypingIndicator();
 
-        setTimeout(() => {
+        try {
+            let aiResult = null;
+            try {
+                aiResult = await queryGemini(text);
+            } catch (apiErr) {
+                console.warn('[Chatbot] Gemini API call failed, falling back to local agronomist base:', apiErr.message);
+            }
+
             removeTypingIndicator(typingId);
-            const { text: responseText, pills } = processAIQuery(text);
-            appendMessage('bot', responseText);
+
+            let replyText = '';
+            let matchedProducts = [];
+            let pills = [];
+
+            if (aiResult && aiResult.text) {
+                replyText = aiResult.text;
+                matchedProducts = (aiResult.products && aiResult.products.length > 0) ?
+                    aiResult.products : findRelevantProducts(replyText + ' ' + text);
+                pills = generateDynamicPills(replyText, text);
+            } else {
+                // Rule-based fallback
+                const fallback = processAIQuery(text);
+                replyText = fallback.text;
+                pills = fallback.pills;
+            }
+
+            chatHistory.push({ role: 'bot', text: replyText });
+
+            let fullBotHTML = formatChatMessage(replyText);
+            if (matchedProducts && matchedProducts.length > 0) {
+                fullBotHTML += matchedProducts.map(renderProductCardHTML).join('');
+            }
+            appendMessage('bot', fullBotHTML, true);
+
             if (pills && pills.length > 0) {
                 updateQuickReplyPills(pills);
             }
-        }, 500);
+        } catch (fatalErr) {
+            removeTypingIndicator(typingId);
+            const fallback = processAIQuery(text);
+            appendMessage('bot', fallback.text);
+            if (fallback.pills) updateQuickReplyPills(fallback.pills);
+        }
     }
 
     function updateQuickReplyPills(pills) {
@@ -1526,13 +1689,36 @@ function initChatbot() {
 
     function formatChatMessage(text) {
         if (!text) return '';
-        return text
+        let formatted = text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\n/g, '<br>');
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+        const lines = formatted.split('\n');
+        let inList = false;
+        const out = [];
+
+        for (let rawLine of lines) {
+            let line = rawLine.trim();
+            if (!line) continue;
+            if (line.startsWith('* ') || line.startsWith('- ') || line.startsWith('• ')) {
+                if (!inList) {
+                    out.push('<ul class="chat-bullet-list">');
+                    inList = true;
+                }
+                out.push(`<li>${line.replace(/^[\*\-\•]\s*/, '')}</li>`);
+            } else {
+                if (inList) {
+                    out.push('</ul>');
+                    inList = false;
+                }
+                out.push(`<p>${line}</p>`);
+            }
+        }
+        if (inList) out.push('</ul>');
+        return out.join('');
     }
 
-    function appendMessage(sender, text) {
+    function appendMessage(sender, textOrHTML, isHTML = false) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${sender}-msg fade-in`;
 
@@ -1540,12 +1726,12 @@ function initChatbot() {
             `<div class="chat-avatar bot-avatar">🌱</div>` :
             `<div class="chat-avatar user-avatar">👤</div>`;
 
-        const formattedContent = formatChatMessage(text);
+        const content = isHTML ? textOrHTML : formatChatMessage(textOrHTML);
 
         msgDiv.innerHTML = `
             ${avatar}
             <div class="chat-bubble">
-                <p>${formattedContent}</p>
+                ${content}
             </div>
         `;
         chatMessages.appendChild(msgDiv);
