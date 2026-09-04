@@ -2466,6 +2466,18 @@ footer {
     gap: 4px;
 }
 
+.chat-product-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #dcfce7;
+    padding: 2px 8px;
+    border-radius: 10px;
+    align-self: flex-start;
+}
+
 .chat-product-title {
     font-weight: 700;
     color: var(--primary-dark);
