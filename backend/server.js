@@ -47,6 +47,7 @@ app.use('/api/orders',     require('./routes/orders'));
 app.use('/api/contact',    require('./routes/contact'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/advisory',   require('./routes/advisory'));
+app.use('/api/chat',       require('./routes/chat'));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
