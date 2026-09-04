@@ -2340,26 +2340,6 @@ footer {
     border-top-right-radius: 0;
 }
 
-.chat-bubble .chat-bullet-list {
-    margin: 6px 0 6px 18px;
-    padding: 0;
-    list-style-type: disc;
-}
-
-.chat-bubble .chat-bullet-list li {
-    margin-bottom: 5px;
-    line-height: 1.45;
-}
-
-.chat-bubble .chat-bullet-list li:last-child {
-    margin-bottom: 0;
-}
-
-.chat-bubble strong {
-    color: inherit;
-    font-weight: 700;
-}
-
 /* Typing Indicator Animation */
 .typing-bubble {
     background-color: #ffffff;

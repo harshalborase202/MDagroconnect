@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MD Agro Services - Your ultimate premium agricultural supplier. Certified hybrid seeds, fertilizers, crop protection, and expert agronomy consulting.">
+    <title>MD Agro Services | Home - Next-Gen Agricultural Solutions</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sticky Navigation Header -->
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo-section">
+                <span class="logo-icon">🌱</span>
+                <div class="logo-text">
+                    <h1>MD AGRO</h1>
+                    <span>Services</span>
+                </div>
+            </a>
+            
+            <nav class="nav-links-wrapper" id="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="products.html">Products Catalog</a>
+                <a href="advisor.html">Crop Advisor</a>
+                <a href="services.html">Seasonal Guides</a>
+                <a href="contact.html">Contact Us</a>
+            </nav>
+            
+            <div class="header-actions">
+                <button class="cart-toggle-btn" id="cart-toggle" aria-label="Shopping Cart">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count-badge">0</span>
+                </button>
+                
+                <button class="hamburger-btn" id="nav-menu-btn" aria-label="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container hero-grid">
+            <div class="hero-content fade-in">
+                <div class="hero-tag-badge">
+                    <span>🌱</span>
+                    <span>एम. डी. अँग्रो सर्व्हिसेस • KRISHI MALL</span>
+                </div>
+                <h2>Empowering Farms with <span class="font-serif">Next-Gen</span> Agricultural Excellence</h2>
+                <p>MD Agro Services provides certified high-germination seeds, eco-friendly bio-pesticides, water-soluble fertilizers, and expert-led crop diagnostic advisors directly to your fields. Grow healthier, yield higher.</p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <a href="products.html" class="btn btn-primary btn-lg">Explore Catalog</a>
+                    <a href="advisor.html" class="btn btn-secondary hero-btn-secondary btn-lg">Consult AI Advisor</a>
+                </div>
+                <div class="hero-badges">
+                    <div class="hero-badge-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>100% Certified Seeds</span>
+                    </div>
+                    <div class="hero-badge-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span>Organic Crop Care</span>
+                    </div>
+                    <div class="hero-badge-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        <span>Physical Store Hub</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-store-card-wrapper fade-in">
+                <div class="store-glass-card">
+                    <div class="store-card-header">
+                        <div class="store-live-status">
+                            <span class="pulse-dot"></span>
+                            <span>Direct Store & Farm Helpline</span>
+                        </div>
+                        <span class="store-dist-badge">🏛️ Krishi Mall Hub</span>
+                    </div>
+
+                    <div class="store-card-media">
+                        <img src="images/md-agro-store.jpg" alt="एम. डी. अँग्रो सर्व्हिसेस - कृषी मॉल Storefront" class="store-preview-img" id="heroStoreImg">
+                        <div class="store-media-overlay">
+                            <span class="store-marathi-title">एम. डी. अँग्रो सर्व्हिसेस</span>
+                            <span class="store-sub-tag">रासायनिक खते • सेंद्रिय खते • बियाणे • कीटकनाशके</span>
+                        </div>
+                    </div>
+
+                    <div class="store-card-body">
+                        <div class="store-quick-metrics">
+                            <div class="metric-box">
+                                <span class="metric-val">100%</span>
+                                <span class="metric-label">Certified Seeds</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-val">10,000+</span>
+                                <span class="metric-label">Happy Farmers</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-val">Quick</span>
+                                <span class="metric-label">Farm Delivery</span>
+                            </div>
+                        </div>
+
+                        <div class="store-contact-strip">
+                            <div class="store-phone-group">
+                                <span class="phone-label">Call Store:</span>
+                                <a href="tel:+919623964955" class="store-phone-link">📞 +91 96239 64955</a>
+                                <span class="phone-separator">/</span>
+                                <a href="tel:+919527382344" class="store-phone-link">+91 95273 82344</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlights Section -->
+    <section class="section" style="padding-top:0;">
+        <div class="container">
+            <div class="highlights-grid">
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🌱</div>
+                    <h3>Certified Seeds</h3>
+                    <p>F1 hybrids with 95%+ germination rate for ultimate yield guarantees.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🧪</div>
+                    <h3>Balanced Nutrition</h3>
+                    <p>Premium grade macro & micronutrient fertilizers for soil health revitalization.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">🛡️</div>
+                    <h3>Crop Protection</h3>
+                    <p>Non-toxic bio-pesticides and systemic fungicides for reliable disease defense.</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon-box">📞</div>
+                    <h3>Expert Consultation</h3>
+                    <p>Get personalized dynamic crop care advice online or contact our advisors.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Preview Section -->
+    <section class="section" style="background-color: #fcfdfd;">
+        <div class="container">
+            <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:15px;">
+                <div>
+                    <h2>Featured Products</h2>
+                    <p>Explore top-performing agricultural inputs trusted by farmers nationwide.</p>
+                </div>
+                <a href="products.html" class="btn btn-secondary">View Full Catalog &rarr;</a>
+            </div>
+            
+            <div class="products-grid" id="featured-products-grid">
+                <!-- Top 4 products loaded dynamically via app.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Agronomy Feature Teaser Box -->
+    <section class="section" style="background-color: #f0f4f2;">
+        <div class="container">
+            <div class="advisor-wrapper">
+                <div style="text-align: center; max-width: 750px; margin: 0 auto;">
+                    <span class="badge category-badge" style="margin-bottom: 12px; background: #e8f5e9; color: #1b5e20;">AI AGRONOMY CONSULTANT</span>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 15px; color: var(--primary-dark);">Diagnose Crop Symptoms Instantly</h2>
+                    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.6;">Experiencing yellowing leaves, pest attacks, or soil acidity issues? Our Smart AI Crop Advisor matches leaf symptoms to soil science and provides actionable treatment plans.</p>
+                    <a href="advisor.html" class="btn btn-primary btn-lg">Launch Smart Crop Advisor &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Trusted by 10,000+ Farmers</h2>
+                <p>See why agriculture professionals across regions rely on MD Agro Services for their inputs and diagnostic advising.</p>
+            </div>
+            
+            <div class="testimonials-row">
+                <div class="testimonial-card">
+                    <div class="test-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"MD Agro Vermicompost completely restored our saline field. Our cotton yield went up by 25% this season. The door delivery was prompt!"</p>
+                    <div class="user-profile">
+                        <div class="user-avatar-circle">RP</div>
+                        <div class="user-meta">
+                            <h4>Rajesh Patel</h4>
+                            <span>Cotton Cultivator, Gujarat</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="test-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"We had a severe blast outbreak in our paddy fields last month. Using MD Agro advisor, we diagnosed it and applied the recommended systemic fungicide. Saved our entire harvest."</p>
+                    <div class="user-profile">
+                        <div class="user-avatar-circle">MS</div>
+                        <div class="user-meta">
+                            <h4>Manpreet Singh</h4>
+                            <span>Rice Grower, Punjab</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="test-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Their digital pH meter is simple to use and highly accurate. I adjusted my fertilizer dosing based on it and noticed excellent improvement in tomatoes."</p>
+                    <div class="user-profile">
+                        <div class="user-avatar-circle">KV</div>
+                        <div class="user-meta">
+                            <h4>Kiran Verma</h4>
+                            <span>Organic Vegetable Farmer, MP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Footer -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col brand-col">
+                <div class="logo-section light-logo">
+                    <span class="logo-icon">🌱</span>
+                    <div class="logo-text">
+                        <h3>MD AGRO</h3>
+                        <span>Services</span>
+                    </div>
+                </div>
+                <p>Empowering farming communities with science-backed agricultural products and expert agronomy consulting.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="products.html">Product Catalog</a></li>
+                    <li><a href="advisor.html">AI Crop Advisor</a></li>
+                    <li><a href="services.html">Seasonal Guides</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="products.html">Certified Seeds</a></li>
+                    <li><a href="products.html">Soluble Fertilizers</a></li>
+                    <li><a href="products.html">Bio-Pesticides</a></li>
+                    <li><a href="products.html">Sprayers & Tools</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Farm Helpline</h4>
+                <p style="color:#a3e635; font-weight:bold; font-size:1rem; margin-bottom:8px;">📞 +91 96239 64955 / 95273 82344</p>
+                <p style="font-size:0.85rem;">Mon - Sat: 8:00 AM - 8:00 PM</p>
+                <p style="font-size:0.85rem; margin-top:8px;">Village Delivery Available</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2026 MD Agro Services. All Rights Reserved. Built for high-yield farming.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Side Drawer -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-header">
+            <h3>Shopping Cart (<span id="cart-total-count">0</span>)</h3>
+            <button class="close-btn" id="close-cart">&times;</button>
+        </div>
+        <div id="cart-drawer-content">
+            <div class="cart-items-wrapper" id="cart-items-container"></div>
+            <div class="cart-footer">
+                <div class="cart-summary">
+                    <span class="label">Total Amount:</span>
+                    <span class="value" id="cart-subtotal">₹0</span>
+                </div>
+                <div class="checkout-form-container">
+                    <h4>Quick Delivery Details</h4>
+                    <form id="checkout-form">
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Name" required id="chk-name">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="tel" placeholder="Mobile Number" required id="chk-phone">
+                        </div>
+                        <div class="form-group-sm">
+                            <input type="text" placeholder="Delivery Address" required id="chk-address">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="cart-checkout-btn" disabled>Confirm & Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Quick View Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close-btn">&times;</button>
+            <div id="product-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chatbot Widget -->
+    <div class="chatbot-widget-wrapper">
+        <button class="chatbot-toggle-btn" id="chatbot-toggle" title="Ask Agro AI Assistant" aria-label="Open AI Chatbot">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+        
+        <div class="chatbot-widget-container" id="chatbot-container">
+            <div class="chatbot-header">
+                <div class="bot-info">
+                    <div class="bot-avatar-main">🌱</div>
+                    <div class="bot-text">
+                        <h4>Agro AI Assistant</h4>
+                        <span class="bot-status">Online 24/7</span>
+                    </div>
+                </div>
+                <button class="chatbot-close-btn" id="chatbot-close" aria-label="Close Chat">&times;</button>
+            </div>
+            
+            <div class="chatbot-messages" id="chat-messages">
+                <div class="chat-msg bot-msg">
+                    <div class="chat-avatar bot-avatar">🌱</div>
+                    <div class="chat-bubble">
+                        <p>Hello! I am your MD Agro assistant. How can I help you with crop seeds, fertilizers, or farm guidance today?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-replies">
+                <button class="reply-pill">Cotton Care</button>
+                <button class="reply-pill">Best Fertilizer</button>
+                <button class="reply-pill">Delivery Time</button>
+            </div>
+            
+            <form id="chat-form" class="chatbot-input-form">
+                <input type="text" id="chat-input" placeholder="Ask a farming question..." required autocomplete="off">
+                <button type="submit" class="send-btn" aria-label="Send Message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
