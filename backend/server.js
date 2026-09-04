@@ -24,7 +24,7 @@ app.use(cors({
       callback(new Error(`CORS blocked — origin "${origin}" is not allowed.`));
     }
   },
-  methods:     ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  methods:     ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 }));
 
@@ -47,6 +47,9 @@ app.use('/api/orders',     require('./routes/orders'));
 app.use('/api/contact',    require('./routes/contact'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/advisory',   require('./routes/advisory'));
+app.use('/api/chat',       require('./routes/chat'));
+app.use('/api/auth',       require('./routes/auth'));
+app.use('/api/admin',      require('./routes/admin'));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {

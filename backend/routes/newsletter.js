@@ -64,4 +64,43 @@ router.get('/subscribers', async (req, res) => {
   }
 });
 
+// ── PATCH /api/newsletter/subscribers/:id/status ──────────────────────────
+router.patch('/subscribers/:id/status', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid subscriber ID.' });
+
+    const { is_active } = req.body;
+    let target = is_active !== undefined ? (is_active ? 1 : 0) : 1;
+
+    const [result] = await pool.execute('UPDATE newsletter_subscribers SET is_active = ? WHERE id = ?', [target, id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Subscriber not found.' });
+    }
+
+    res.json({ success: true, message: `Subscriber status updated to ${target === 1 ? 'active' : 'inactive'}.`, is_active: target });
+  } catch (err) {
+    console.error('[newsletter] PATCH /subscribers/:id/status:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update subscriber.' });
+  }
+});
+
+// ── DELETE /api/newsletter/subscribers/:id ────────────────────────────────
+router.delete('/subscribers/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid subscriber ID.' });
+
+    const [result] = await pool.execute('DELETE FROM newsletter_subscribers WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Subscriber not found.' });
+    }
+
+    res.json({ success: true, message: 'Subscriber removed successfully.' });
+  } catch (err) {
+    console.error('[newsletter] DELETE /subscribers/:id:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to delete subscriber.' });
+  }
+});
+
 module.exports = router;
