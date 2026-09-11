@@ -15,10 +15,13 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080')
   .split(',')
   .map(o => o.trim());
 
+// Regex to allow any device on the local network (LAN)
+const localNetworkPattern = /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. Postman, curl) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow non-browser requests (e.g. Postman, curl), listed origins, and any LAN IP
+    if (!origin || allowedOrigins.includes(origin) || localNetworkPattern.test(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS blocked — origin "${origin}" is not allowed.`));

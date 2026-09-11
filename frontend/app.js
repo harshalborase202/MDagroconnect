@@ -312,8 +312,8 @@ const ADVISORY_DATABASE = {
 };
 
 // ─── Backend API Base URL ────────────────────────────────────────────────
-// Update this if your backend runs on a different port or host.
-const API_BASE = 'http://localhost:3001/api';
+// Dynamically uses the current hostname so it works on any PC on the network.
+const API_BASE = `http://${window.location.hostname}:3001/api`;
 
 // Application State
 let cart = JSON.parse(localStorage.getItem('md_cart') || '[]');
@@ -1591,7 +1591,7 @@ function initChatbot() {
     async function queryGemini(userText) {
         // 1. Try local Express backend proxy first if available
         try {
-            const backendRes = await fetch('http://localhost:3001/api/chat', {
+            const backendRes = await fetch(`http://${window.location.hostname}:3001/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userText, history: chatHistory })
