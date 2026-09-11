@@ -70,4 +70,43 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ── PATCH /api/contact/:id/read ───────────────────────────────────────────
+router.patch('/:id/read', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid message ID.' });
+
+    const { is_read } = req.body;
+    let target = is_read !== undefined ? (is_read ? 1 : 0) : 1;
+
+    const [result] = await pool.execute('UPDATE contact_messages SET is_read = ? WHERE id = ?', [target, id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    res.json({ success: true, message: `Message marked as ${target === 1 ? 'read' : 'unread'}.`, is_read: target });
+  } catch (err) {
+    console.error('[contact] PATCH /:id/read:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to update message status.' });
+  }
+});
+
+// ── DELETE /api/contact/:id ───────────────────────────────────────────────
+router.delete('/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid message ID.' });
+
+    const [result] = await pool.execute('DELETE FROM contact_messages WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Message not found.' });
+    }
+
+    res.json({ success: true, message: 'Message deleted successfully.' });
+  } catch (err) {
+    console.error('[contact] DELETE /:id:', err.message);
+    res.status(500).json({ success: false, message: 'Failed to delete message.' });
+  }
+});
+
 module.exports = router;
