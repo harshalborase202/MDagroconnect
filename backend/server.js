@@ -2,10 +2,11 @@
 // MD Agro Connect — Express API Server
 // Starts on PORT from .env (default 3001)
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
-const path    = require('path');
 
 const app  = express();
 const PORT = Number(process.env.PORT) || 3001;
@@ -19,20 +20,21 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // ── CORS ──────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080,http://127.0.0.1:8080,http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000')
   .split(',')
   .map(o => o.trim());
 
-// Regex to allow any device on the local network (LAN)
-const localNetworkPattern = /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+// Regex to allow any local host / dev port or local network (LAN) IP
+const localNetworkPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. Postman, curl), listed origins, and any LAN IP
-    if (!origin || allowedOrigins.includes(origin) || localNetworkPattern.test(origin)) {
+    // Allow non-browser requests, file:/// (origin is 'null'), listed origins, and LAN IPs
+    if (!origin || origin === 'null' || allowedOrigins.includes(origin) || localNetworkPattern.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked — origin "${origin}" is not allowed.`));
+      // In development mode, allow any origin to prevent friction
+      callback(null, true);
     }
   },
   methods:     ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

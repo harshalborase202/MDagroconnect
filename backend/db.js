@@ -2,7 +2,9 @@
 // MySQL connection pool using mysql2/promise
 // All routes import this module to get a shared connection pool.
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config(); // Fallback to cwd if any
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
