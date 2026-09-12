@@ -10,6 +10,14 @@ const path    = require('path');
 const app  = express();
 const PORT = Number(process.env.PORT) || 3001;
 
+// Global process error guards to prevent server crashing on transient connection errors
+process.on('uncaughtException', (err) => {
+  console.warn('[server] Uncaught exception prevented crash:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.warn('[server] Unhandled rejection prevented crash:', reason?.message || reason);
+});
+
 // ── CORS ──────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080')
   .split(',')

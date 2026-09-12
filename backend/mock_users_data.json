@@ -1,5 +1,31 @@
 [
   {
+    "id": 1789190805632,
+    "name": "Om Awari",
+    "phone": "9307764595",
+    "email": "omawari12@gmail.com",
+    "location": "Akole,Ahmednagar",
+    "password": "1234",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-09-12T05:26:45.632Z",
+    "total_orders": 0,
+    "total_spent": 0
+  },
+  {
+    "id": 1789189798681,
+    "name": "Arti Awari",
+    "phone": "8999433650",
+    "email": "awariarti04@gmail.com",
+    "location": "Akole,Maharashtra",
+    "password": "0409",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-09-12T05:09:58.681Z",
+    "total_orders": 0,
+    "total_spent": 0
+  },
+  {
     "id": 1789105143070,
     "name": "Harshal Borase",
     "phone": "9359421867",

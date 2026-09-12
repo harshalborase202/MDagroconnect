@@ -258,10 +258,15 @@ router.get('/my-orders', async (req, res) => {
       orders,
     });
   } catch (err) {
-    console.error('[auth] My orders error:', err.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve order history.',
+    console.warn('[auth] My orders MySQL error, using memoryStore fallback:', err.message);
+    const allOrders = memoryStore.getOrders();
+    const filtered = allOrders.filter(o => 
+      (phone && String(o.phone).trim() === String(phone).trim()) ||
+      (userId && String(o.user_id) === String(userId))
+    );
+    return res.json({
+      success: true,
+      orders: filtered,
     });
   }
 });
