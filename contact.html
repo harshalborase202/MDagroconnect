@@ -370,7 +370,7 @@
                 <button class="reply-pill">Delivery Time</button>
             </div>
             
-            <form id="chat-form" class="chatbot-input-form">
+            <form id="chat-form" class="chatbot-input-form" onsubmit="event.preventDefault(); return false;">
                 <input type="text" id="chat-input" placeholder="Ask a farming question..." required autocomplete="off">
                 <button type="submit" class="send-btn" aria-label="Send Message">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

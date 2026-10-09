@@ -1583,16 +1583,29 @@ Guidelines:
     // Handle Form Submit
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const text = chatInput.value.trim();
         if (!text) return;
         chatInput.value = '';
         sendMessage(text);
     });
 
+    // Handle Enter key directly on input to prevent form submission or page reload
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = chatInput.value.trim();
+            if (!text) return;
+            chatInput.value = '';
+            sendMessage(text);
+        }
+    });
+
     async function queryGemini(userText) {
         // 1. Try local Express backend proxy first if available
         try {
-            const backendRes = await fetch(`http://${window.location.hostname}:3001/api/chat`, {
+            const backendRes = await fetch(`${API_BASE}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userText, history: chatHistory })
@@ -1608,6 +1621,10 @@ Guidelines:
         }
 
         // 2. Direct Google Gemini API call
+        if (!GEMINI_ENDPOINT) {
+            throw new Error('No direct Gemini API key configured, using local rules');
+        }
+
         const contents = [];
         chatHistory.slice(-4).forEach(turn => {
             contents.push({
@@ -1776,7 +1793,13 @@ Guidelines:
         for (let rawLine of lines) {
             let line = rawLine.trim();
             if (!line) continue;
-            if (line.startsWith('* ') || line.startsWith('- ') || line.startsWith('• ')) {
+            if (line.startsWith('<')) {
+                if (inList) {
+                    out.push('</ul>');
+                    inList = false;
+                }
+                out.push(line);
+            } else if (line.startsWith('* ') || line.startsWith('- ') || line.startsWith('• ')) {
                 if (!inList) {
                     out.push('<ul class="chat-bullet-list">');
                     inList = true;
