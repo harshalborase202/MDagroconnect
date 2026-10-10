@@ -116,3 +116,25 @@ CREATE TABLE IF NOT EXISTS advisory_logs (
   INDEX idx_advisory_crop  (crop),
   INDEX idx_advisory_issue (issue)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- -------------------------------------------------------------
+-- 7. product_reviews (Feedback & Rating system like Amazon/Flipkart)
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id            INT UNSIGNED   NOT NULL AUTO_INCREMENT,
+  product_id    VARCHAR(10)    NOT NULL,
+  order_id      INT UNSIGNED   DEFAULT NULL,
+  user_id       INT UNSIGNED   DEFAULT NULL,
+  customer_name VARCHAR(120)   NOT NULL,
+  rating        TINYINT        NOT NULL,
+  title         VARCHAR(255)   DEFAULT '',
+  comment       TEXT           NOT NULL,
+  is_verified   TINYINT(1)     NOT NULL DEFAULT 1,
+  created_at    TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_reviews_product (product_id),
+  INDEX idx_reviews_order   (order_id),
+  INDEX idx_reviews_user    (user_id),
+  CONSTRAINT fk_rev_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

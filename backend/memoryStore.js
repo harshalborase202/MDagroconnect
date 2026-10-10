@@ -71,6 +71,68 @@ const DEFAULT_ORDERS = [
 
 let users = [];
 let orders = [];
+let memoryReviews = [
+  {
+    id: 1,
+    product_id: 's1',
+    order_id: 1,
+    user_id: 1,
+    customer_name: 'Arti Awari',
+    rating: 5,
+    title: 'उत्कृष्ट उगवण क्षमता! (Superb Germination)',
+    comment: 'मी हे बी पेरले आणि 95% उगवण झाली. झाडांची वाढ खूप जोमदार आहे. सर्व शेतकरी मित्रांना नक्की शिफारस करतो!',
+    is_verified: 1,
+    created_at: '2026-09-14T10:30:00.000Z'
+  },
+  {
+    id: 2,
+    product_id: 's1',
+    order_id: 2,
+    user_id: 2,
+    customer_name: 'Ramesh Patil',
+    rating: 5,
+    title: 'High yield certified seeds',
+    comment: 'Delivered within 2 days in Baramati. Germination rate was excellent and boll formation is very healthy.',
+    is_verified: 1,
+    created_at: '2026-09-20T14:15:00.000Z'
+  },
+  {
+    id: 3,
+    product_id: 'f1',
+    order_id: 3,
+    user_id: 3,
+    customer_name: 'Suresh More',
+    rating: 5,
+    title: '100% अस्सल गांडूळ खत',
+    comment: 'मातीची सुपीकता सुधारण्यासाठी उत्तम खत. पिकांना लगेच हिरवेपणा आला.',
+    is_verified: 1,
+    created_at: '2026-09-25T16:40:00.000Z'
+  },
+  {
+    id: 4,
+    product_id: 'f2',
+    order_id: 4,
+    user_id: 1,
+    customer_name: 'Arti Awari',
+    rating: 4,
+    title: 'Very effective foliar spray',
+    comment: 'Dissolves instantly in water without any residue. Sprayed on cotton and saw noticeable difference in 4 days.',
+    is_verified: 1,
+    created_at: '2026-10-01T11:20:00.000Z'
+  },
+  {
+    id: 5,
+    product_id: 'p1',
+    order_id: 1,
+    user_id: 2,
+    customer_name: 'Dnyaneshwar Jadhav',
+    rating: 5,
+    title: 'Natural organic pest protection',
+    comment: 'Neem shield controlled aphids and sucking pests without harming beneficial insects. Good product.',
+    is_verified: 1,
+    created_at: '2026-10-05T09:10:00.000Z'
+  }
+];
 
 try {
   if (fs.existsSync(USERS_FILE)) {
@@ -170,5 +232,29 @@ module.exports = {
   deleteOrder: (id) => {
     orders = orders.filter(order => String(order.id) !== String(id));
     saveOrders();
+  },
+  // Reviews Store
+  getReviews: (productId) => {
+    if (productId) {
+      return memoryReviews.filter(r => String(r.product_id) === String(productId));
+    }
+    return memoryReviews;
+  },
+  addReview: (review) => {
+    const newRev = {
+      id: review.id || Date.now(),
+      product_id: review.product_id || review.productId,
+      order_id: review.order_id || review.orderId || null,
+      user_id: review.user_id || review.userId || null,
+      customer_name: review.customer_name || review.customerName || 'Farmer / Customer',
+      rating: Number(review.rating) || 5,
+      title: review.title || '',
+      comment: review.comment || '',
+      is_verified: review.is_verified !== undefined ? review.is_verified : 1,
+      created_at: review.created_at || new Date().toISOString()
+    };
+    memoryReviews.unshift(newRev);
+    return newRev;
   }
 };
+

@@ -4124,6 +4124,381 @@ body, header, .highlight-card, .product-card, .cart-drawer, .gateway-modal-card,
     border-color: #1e362a;
 }
 
+/* ==========================================================================
+   AMAZON & FLIPKART STYLE REVIEWS & FEEDBACK MODULE
+   ========================================================================== */
+
+/* Post-Order Feedback Widget (Checkout confirmation) */
+.post-order-feedback-box {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.feedback-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.post-order-feedback-box h4 {
+    margin: 0 0 6px 0;
+    font-size: 1.05rem;
+    color: var(--text-main, #0f172a);
+}
+
+.post-order-feedback-box p {
+    margin: 0 0 15px 0;
+    font-size: 0.85rem;
+    color: var(--text-muted, #64748b);
+    line-height: 1.4;
+}
+
+.interactive-star-rating {
+    margin-bottom: 15px;
+}
+
+.star-rating-stars {
+    display: inline-flex;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 1.7rem;
+    line-height: 1;
+}
+
+.star-btn {
+    color: #cbd5e1;
+    transition: color 0.15s ease, transform 0.15s ease;
+    user-select: none;
+}
+
+.star-btn.active,
+.star-btn.hovered {
+    color: #f59e0b;
+    text-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+}
+
+.star-btn:hover {
+    transform: scale(1.15);
+}
+
+.rating-label-text {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #b45309;
+    margin-top: 6px;
+}
+
+.feedback-input-group {
+    margin-bottom: 12px;
+}
+
+.feedback-input-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-main, #0f172a);
+}
+
+.feedback-input-group input,
+.feedback-input-group select,
+.feedback-input-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.feedback-input-group input:focus,
+.feedback-input-group select:focus,
+.feedback-input-group textarea:focus {
+    border-color: #22c55e;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.fb-success-alert {
+    margin-top: 12px;
+    padding: 12px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Amazon / Flipkart Style Product Reviews Layout */
+.product-reviews-container {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.reviews-header-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reviews-header-strip h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reviews-summary-card {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 24px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .reviews-summary-card {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+.rating-big-score {
+    text-align: center;
+    padding-right: 15px;
+    border-right: 1px solid #e2e8f0;
+}
+
+@media (max-width: 600px) {
+    .rating-big-score {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 15px;
+    }
+}
+
+.rating-big-number {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--text-main, #0f172a);
+    line-height: 1;
+}
+
+.rating-big-stars {
+    color: #f59e0b;
+    font-size: 1.2rem;
+    margin: 6px 0 4px 0;
+}
+
+.rating-total-label {
+    font-size: 0.82rem;
+    color: var(--text-muted, #64748b);
+}
+
+/* Amazon / Flipkart Star Distribution Bars */
+.star-bars-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.star-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+}
+
+.star-bar-label {
+    width: 45px;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.star-bar-track {
+    flex: 1;
+    height: 9px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.star-bar-fill {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.star-bar-pct {
+    width: 35px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-muted, #64748b);
+}
+
+/* Review List */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.review-item-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.review-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.review-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #bbf7d0;
+}
+
+.review-user-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-main, #0f172a);
+}
+
+.verified-purchase-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: #ecfdf5;
+    color: #059669;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    border: 1px solid #a7f3d0;
+}
+
+.review-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.review-stars {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}
+
+.review-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-main, #0f172a);
+}
+
+.review-date {
+    font-size: 0.78rem;
+    color: var(--text-muted, #64748b);
+    margin-bottom: 8px;
+}
+
+.review-comment-body {
+    font-size: 0.92rem;
+    color: #334155;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Modal review write drawer */
+.write-review-drawer {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    padding: 18px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+/* Dark mode overrides for review module */
+[data-theme="dark"] .post-order-feedback-box,
+[data-theme="dark"] .reviews-summary-card,
+[data-theme="dark"] .write-review-drawer {
+    background: #11221a;
+    border-color: #1e382b;
+}
+
+[data-theme="dark"] .review-item-card {
+    background: #14281f;
+    border-color: #214032;
+}
+
+[data-theme="dark"] .star-bar-track {
+    background: #203c2e;
+}
+
+[data-theme="dark"] .review-comment-body {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .feedback-input-group input,
+[data-theme="dark"] .feedback-input-group select,
+[data-theme="dark"] .feedback-input-group textarea {
+    background: #0d1a14;
+    border-color: #224233;
+    color: #f1f5f9;
+}
+
+
 
 
 

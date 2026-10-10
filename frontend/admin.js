@@ -277,6 +277,15 @@ class AdminApp {
     }
 
     // ─── AUTHENTICATION ───────────────────────────────────────────────────
+    getAuthHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = this.token || sessionStorage.getItem('md_admin_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    }
+
     checkAuthStatus() {
         const authOverlay = document.getElementById('admin-auth-overlay');
         const adminLayout = document.getElementById('admin-layout');
@@ -424,7 +433,9 @@ class AdminApp {
     async fetchOverview() {
         if (this.isOnline) {
             try {
-                const res = await fetch(`${this.apiBase}/admin/overview`);
+                const res = await fetch(`${this.apiBase}/admin/overview`, {
+                    headers: this.getAuthHeaders()
+                });
                 const data = await res.json();
                 if (res.ok && data.success) {
                     this.overview = data.data;
@@ -571,7 +582,9 @@ class AdminApp {
 
         if (this.isOnline) {
             try {
-                const res = await fetch(`${this.apiBase}/admin/users`);
+                const res = await fetch(`${this.apiBase}/admin/users`, {
+                    headers: this.getAuthHeaders()
+                });
                 const data = await res.json();
                 if (res.ok && data.success && Array.isArray(data.users)) {
                     const serverPhones = new Set(data.users.map(u => String(u.phone)));
@@ -1703,7 +1716,7 @@ class AdminApp {
             try {
                 const res = await fetch(`${this.apiBase}/admin/users`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders(),
                     body: JSON.stringify(newUser)
                 });
                 const data = await res.json();
@@ -1736,7 +1749,7 @@ class AdminApp {
             try {
                 await fetch(`${this.apiBase}/admin/users/${userId}/status`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: this.getAuthHeaders(),
                     body: JSON.stringify({ isActive: newStatus === 1 })
                 });
             } catch (e) {}
@@ -1754,7 +1767,10 @@ class AdminApp {
         this.openConfirmModal(`Permanently delete farmer account "${user.name}" (${user.phone})?`, async () => {
             if (this.isOnline) {
                 try {
-                    await fetch(`${this.apiBase}/admin/users/${userId}`, { method: 'DELETE' });
+                    await fetch(`${this.apiBase}/admin/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: this.getAuthHeaders()
+                    });
                 } catch (e) {}
             }
             this.users = this.users.filter(u => u.id != userId);

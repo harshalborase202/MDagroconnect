@@ -336,6 +336,7 @@ function initApp() {
     updateCartUI();
     renderAdvisoryResult(); // Run initial advice render
     initChatbot(); // Initialize AI chatbot
+    loadRecentReviewsForHome(); // Amazon & Flipkart live customer feedback for home testimonials
 }
 
 // Real Photographic Product Images Database (High-Res Realistic Agricultural Photos)
@@ -1073,9 +1074,15 @@ async function processCheckout() {
     let orderPlaced = false;
 
     try {
+        const userToken = sessionStorage.getItem('md_user_token');
+        const orderHeaders = { 'Content-Type': 'application/json' };
+        if (userToken) {
+            orderHeaders['Authorization'] = `Bearer ${userToken}`;
+        }
+
         const res = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: orderHeaders,
             body: JSON.stringify({ customerName: name, phone, address, items, userId: currentUser ? currentUser.id : null }),
             signal: AbortSignal.timeout(3500)
         });
@@ -1085,8 +1092,14 @@ async function processCheckout() {
             orderPlaced = true;
             _showCheckoutSuccess(data, name, phone, address);
             return;
-        } else if (!res.ok && data.message) {
-            console.warn('[Checkout] Backend reported error:', data.message);
+        } else if (!res.ok) {
+            const errorMsg = (data.errors && data.errors[0] && data.errors[0].msg) || data.message || 'Validation error while placing order.';
+            showToast('⚠ ' + errorMsg, 'error');
+            if (checkoutBtn) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = origBtnText;
+            }
+            return;
         }
     } catch (err) {
         console.warn('[Checkout] Network/API unavailable, using local resilient fallback:', err.message);
@@ -1141,6 +1154,13 @@ function _showCheckoutSuccess(data, name, phone, address) {
         localStorage.setItem('md_local_orders', JSON.stringify(localOrders));
     }
 
+    // Snapshot purchased items before clearing cart
+    const purchasedItems = (cart && cart.length > 0) ? cart.map(item => ({
+        id: item.product.id,
+        name: item.product.name,
+        quantity: item.quantity
+    })) : [{ id: 's1', name: 'Premium Hybrid Cotton Seeds', quantity: 1 }];
+
     checkoutContainer.innerHTML = `
         <div class="checkout-success-view fade-in">
             <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" class="success-checkmark">
@@ -1153,16 +1173,58 @@ function _showCheckoutSuccess(data, name, phone, address) {
             <div class="order-summary-box">
                 <h4>Items Ordered:</h4>
                 <ul>
-                    ${cart.map(item => `<li>${item.product.name} &times; ${item.quantity}</li>`).join('')}
+                    ${purchasedItems.map(item => `<li>${escapeHTML(item.name)} &times; ${item.quantity}</li>`).join('')}
                 </ul>
             </div>
-            <button class="btn btn-primary" id="btn-close-checkout" style="margin-top:20px; width:100%;">Return to Shop</button>
+
+            <!-- Amazon / Flipkart Style Post-Order Feedback Widget -->
+            <div class="post-order-feedback-box" id="post-order-feedback-widget">
+                <div class="feedback-badge">★ Verified Buyer Feedback</div>
+                <h4>Rate your purchased items</h4>
+                <p>Help other farmers by sharing your rating & feedback for this purchase:</p>
+
+                ${purchasedItems.length > 1 ? `
+                <div class="feedback-input-group">
+                    <label for="fb-product-select">Select Item to Review:</label>
+                    <select id="fb-product-select">
+                        ${purchasedItems.map(item => `<option value="${item.id}">${escapeHTML(item.name)}</option>`).join('')}
+                    </select>
+                </div>
+                ` : `<input type="hidden" id="fb-product-select" value="${purchasedItems[0]?.id || ''}">`}
+
+                <div class="interactive-star-rating">
+                    <label style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:4px;">Your Star Rating:</label>
+                    <div class="star-rating-stars" id="fb-stars-picker">
+                        <span class="star-btn active" data-rating="1">★</span>
+                        <span class="star-btn active" data-rating="2">★</span>
+                        <span class="star-btn active" data-rating="3">★</span>
+                        <span class="star-btn active" data-rating="4">★</span>
+                        <span class="star-btn active" data-rating="5">★</span>
+                    </div>
+                    <span class="rating-label-text" id="fb-rating-text">5 ★ - Outstanding Quality!</span>
+                </div>
+
+                <div class="feedback-input-group">
+                    <label for="fb-review-comment">Review & Comments:</label>
+                    <textarea id="fb-review-comment" rows="2" placeholder="e.g. Excellent germination, prompt delivery, highly recommended!"></textarea>
+                </div>
+
+                <button class="btn btn-primary" id="btn-submit-post-feedback" style="width:100%; margin-bottom:5px;">
+                    Submit Verified Review ★
+                </button>
+                <div id="fb-status-msg"></div>
+            </div>
+
+            <button class="btn btn-secondary" id="btn-close-checkout" style="margin-top:15px; width:100%;">Return to Shop</button>
         </div>
     `;
 
     // Clear cart
     cart = [];
     updateCartUI();
+
+    // Initialize Post-Order Feedback logic
+    initPostOrderFeedbackWidget(data.orderId, name, purchasedItems);
 
     const closeBtn = document.getElementById('btn-close-checkout');
     if (closeBtn) {
@@ -1215,7 +1277,7 @@ function restoreCartDrawerHTML() {
     updateCartUI();
 }
 
-// Show Product Details Modal
+// Show Product Details Modal with Amazon & Flipkart Style Ratings & Reviews
 function showProductModal(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
@@ -1224,7 +1286,7 @@ function showProductModal(productId) {
     const modalContent = document.getElementById('product-modal-body');
     if (!modal || !modalContent) return;
 
-    const tagsHTML = product.tags.map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
+    const tagsHTML = (product.tags || []).map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
 
     modalContent.innerHTML = `
         <div class="modal-product-grid">
@@ -1232,13 +1294,13 @@ function showProductModal(productId) {
                 ${getProductSVG(product.image)}
             </div>
             <div class="modal-product-details">
-                <span class="badge category-badge">${product.category.toUpperCase()}</span>
-                <h2 class="modal-title">${product.name}</h2>
-                <div class="product-rating" style="margin-bottom:15px;">
-                    <div class="stars">
+                <span class="badge category-badge">${(product.category || '').toUpperCase()}</span>
+                <h2 class="modal-title">${escapeHTML(product.name)}</h2>
+                <div class="product-rating" style="margin-bottom:15px; cursor:pointer;" onclick="document.getElementById('product-reviews-section')?.scrollIntoView({behavior:'smooth'})" title="Click to view reviews">
+                    <div class="stars" id="modal-top-stars">
                         ${renderStars(product.rating)}
                     </div>
-                    <span class="rating-val">${product.rating} (${product.reviews} customer reviews)</span>
+                    <span class="rating-val" id="modal-top-rating-text">${product.rating} (${product.reviews} customer ratings & reviews)</span>
                 </div>
                 <p class="modal-desc">${product.description}</p>
                 
@@ -1255,7 +1317,7 @@ function showProductModal(productId) {
                     <div class="modal-price">
                         <span class="currency">₹</span>
                         <span class="amount">${product.price}</span>
-                        <span class="unit">/${product.unit.replace('per ', '')}</span>
+                        <span class="unit">/${(product.unit || '').replace('per ', '')}</span>
                     </div>
                 </div>
 
@@ -1271,6 +1333,64 @@ function showProductModal(productId) {
                 <div style="margin-top:15px;">${tagsHTML}</div>
             </div>
         </div>
+
+        <!-- Amazon / Flipkart Style Customer Reviews & Ratings Section -->
+        <div class="product-reviews-container" id="product-reviews-section">
+            <div class="reviews-header-strip">
+                <h3>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    Customer Ratings & Reviews
+                </h3>
+                <button class="btn btn-secondary btn-sm" id="btn-toggle-modal-review-form">★ Rate & Review Product</button>
+            </div>
+
+            <!-- Inline Write Review Drawer (Collapsible) -->
+            <div class="write-review-drawer" id="modal-write-review-box" style="display:none;">
+                <h4 style="margin:0 0 10px 0; font-size:1.05rem; color:var(--text-main);">Share Your Verified Farmer Feedback</h4>
+                <div class="interactive-star-rating">
+                    <label style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:4px;">Select Star Rating:</label>
+                    <div class="star-rating-stars" id="modal-stars-picker">
+                        <span class="star-btn active" data-rating="1">★</span>
+                        <span class="star-btn active" data-rating="2">★</span>
+                        <span class="star-btn active" data-rating="3">★</span>
+                        <span class="star-btn active" data-rating="4">★</span>
+                        <span class="star-btn active" data-rating="5">★</span>
+                    </div>
+                    <span class="rating-label-text" id="modal-rating-label">5 ★ - Outstanding Quality!</span>
+                </div>
+                <div class="feedback-input-group">
+                    <label>Your Name:</label>
+                    <input type="text" id="modal-rev-author" placeholder="Farmer Name" value="${currentUser ? escapeHTML(currentUser.name) : ''}">
+                </div>
+                <div class="feedback-input-group">
+                    <label>Review Headline (optional):</label>
+                    <input type="text" id="modal-rev-title" placeholder="e.g. Excellent crop germination & yield!">
+                </div>
+                <div class="feedback-input-group">
+                    <label>Detailed Experience / Feedback:</label>
+                    <textarea id="modal-rev-body" rows="3" placeholder="Share your experience on product quality, packaging, delivery or yield improvement..."></textarea>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-primary btn-sm" id="btn-submit-modal-review">Submit Review</button>
+                    <button class="btn btn-secondary btn-sm" id="btn-cancel-modal-review">Cancel</button>
+                </div>
+                <div id="modal-rev-status" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- Rating Summary Breakdown (Flipkart / Amazon Bar Chart) -->
+            <div class="reviews-summary-card" id="reviews-summary-container">
+                <div style="text-align:center; padding:20px; color:#64748b;">
+                    Loading verified ratings...
+                </div>
+            </div>
+
+            <!-- Verified Customer Reviews List -->
+            <div class="reviews-list" id="modal-reviews-list">
+                <div style="text-align:center; padding:20px; color:#64748b;">
+                    Loading customer feedback...
+                </div>
+            </div>
+        </div>
     `;
 
     modal.classList.add('active');
@@ -1282,6 +1402,378 @@ function showProductModal(productId) {
             addToCart(product.id);
             modal.classList.remove('active');
         });
+    }
+
+    // Toggle Review Drawer
+    const toggleBtn = document.getElementById('btn-toggle-modal-review-form');
+    const writeDrawer = document.getElementById('modal-write-review-box');
+    const cancelBtn = document.getElementById('btn-cancel-modal-review');
+    if (toggleBtn && writeDrawer) {
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = writeDrawer.style.display === 'none';
+            writeDrawer.style.display = isHidden ? 'block' : 'none';
+            toggleBtn.textContent = isHidden ? '✕ Close Review Form' : '★ Rate & Review Product';
+        });
+    }
+    if (cancelBtn && writeDrawer) {
+        cancelBtn.addEventListener('click', () => {
+            writeDrawer.style.display = 'none';
+            if (toggleBtn) toggleBtn.textContent = '★ Rate & Review Product';
+        });
+    }
+
+    // Setup interactive star rating and submission for Modal review form
+    setupModalReviewForm(product.id);
+
+    // Fetch and render customer reviews
+    loadProductReviews(product.id);
+}
+
+// Fetch and render reviews for a product (Amazon & Flipkart style)
+async function loadProductReviews(productId) {
+    const summaryContainer = document.getElementById('reviews-summary-container');
+    const listContainer = document.getElementById('modal-reviews-list');
+    if (!summaryContainer || !listContainer) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/reviews?productId=${encodeURIComponent(productId)}`);
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            const summary = data.summary || { averageRating: 5.0, totalReviews: 0, distribution: {} };
+            const reviews = data.reviews || [];
+
+            // Update top product rating in modal
+            const topStars = document.getElementById('modal-top-stars');
+            const topText = document.getElementById('modal-top-rating-text');
+            if (topStars) topStars.innerHTML = renderStars(summary.averageRating);
+            if (topText) topText.innerHTML = `${summary.averageRating} (${summary.totalReviews} customer ratings & reviews)`;
+
+            // Also update product in PRODUCTS catalog array
+            const prod = PRODUCTS.find(p => p.id === productId);
+            if (prod) {
+                prod.rating = summary.averageRating;
+                prod.reviews = summary.totalReviews;
+            }
+
+            // Render Flipkart / Amazon Star Distribution Summary Card
+            const dist = summary.distribution || {};
+            summaryContainer.innerHTML = `
+                <div class="rating-big-score">
+                    <div class="rating-big-number">${summary.averageRating}</div>
+                    <div class="rating-big-stars">${renderStars(summary.averageRating)}</div>
+                    <div class="rating-total-label">${summary.totalReviews} total verified ratings</div>
+                </div>
+                <div class="star-bars-col">
+                    ${[5, 4, 3, 2, 1].map(star => {
+                        const starInfo = dist[star] || { count: 0, percentage: 0 };
+                        return `
+                            <div class="star-bar-row">
+                                <span class="star-bar-label">${star} ★</span>
+                                <div class="star-bar-track">
+                                    <div class="star-bar-fill" style="width: ${starInfo.percentage}%;"></div>
+                                </div>
+                                <span class="star-bar-pct">${starInfo.percentage}%</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            // Render Reviews List
+            if (reviews.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="text-align:center; padding:30px 20px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; color:#64748b;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin-bottom:8px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <p style="margin:0 0 8px 0; font-weight:600; color:#334155;">No customer reviews yet</p>
+                        <p style="margin:0; font-size:0.85rem;">Be the first farmer to share your experience with this product!</p>
+                    </div>
+                `;
+            } else {
+                listContainer.innerHTML = reviews.map(rev => {
+                    const initials = (rev.customer_name || 'Farmer').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                    const formattedDate = rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently';
+                    const verifiedBadge = rev.is_verified ? `<span class="verified-purchase-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified Purchase</span>` : '';
+
+                    return `
+                        <div class="review-item-card fade-in">
+                            <div class="review-user-row">
+                                <div class="review-avatar">${initials}</div>
+                                <div class="review-user-name">${escapeHTML(rev.customer_name || 'Verified Farmer')}</div>
+                                ${verifiedBadge}
+                            </div>
+                            <div class="review-rating-row">
+                                <span class="review-stars">${'★'.repeat(Math.round(rev.rating || 5))}${'☆'.repeat(5 - Math.round(rev.rating || 5))}</span>
+                                ${rev.title ? `<span class="review-title">${escapeHTML(rev.title)}</span>` : ''}
+                            </div>
+                            <div class="review-date">Reviewed in India on ${formattedDate}</div>
+                            <p class="review-comment-body">${escapeHTML(rev.comment || '')}</p>
+                            <div style="margin-top:10px; font-size:0.8rem; color:#64748b; display:flex; align-items:center; gap:6px;">
+                                <span>Helpful?</span>
+                                <button class="btn btn-secondary btn-xs" onclick="this.innerHTML='✔ Thank you!'; this.disabled=true;" style="padding:2px 8px; font-size:0.75rem;">👍 Helpful</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    } catch (err) {
+        console.warn('[Reviews] Could not load product reviews:', err.message);
+        summaryContainer.innerHTML = `<p style="font-size:0.85rem; color:#64748b;">Ratings summary temporarily offline.</p>`;
+    }
+}
+
+// Setup interactive star rating and submission for Modal review form
+function setupModalReviewForm(productId) {
+    const picker = document.getElementById('modal-stars-picker');
+    const label = document.getElementById('modal-rating-label');
+    const submitBtn = document.getElementById('btn-submit-modal-review');
+    const statusDiv = document.getElementById('modal-rev-status');
+    if (!picker || !submitBtn) return;
+
+    let selectedRating = 5;
+
+    const ratingTexts = {
+        1: '1 ★ - Poor Experience',
+        2: '2 ★ - Fair / Needs Improvement',
+        3: '3 ★ - Good / Average',
+        4: '4 ★ - Very Good Quality',
+        5: '5 ★ - Outstanding Quality!'
+    };
+
+    function updateStarsDisplay(val) {
+        picker.querySelectorAll('.star-btn').forEach(btn => {
+            const r = parseInt(btn.getAttribute('data-rating'), 10);
+            if (r <= val) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        if (label) label.textContent = ratingTexts[val] || `${val} ★`;
+    }
+
+    picker.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const r = parseInt(btn.getAttribute('data-rating'), 10);
+            updateStarsDisplay(r);
+        });
+        btn.addEventListener('mouseleave', () => {
+            updateStarsDisplay(selectedRating);
+        });
+        btn.addEventListener('click', () => {
+            selectedRating = parseInt(btn.getAttribute('data-rating'), 10);
+            updateStarsDisplay(selectedRating);
+        });
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const authorInput = document.getElementById('modal-rev-author');
+        const titleInput = document.getElementById('modal-rev-title');
+        const commentInput = document.getElementById('modal-rev-body');
+
+        const authorName = authorInput?.value.trim() || (currentUser ? currentUser.name : 'Verified Farmer');
+        const title = titleInput?.value.trim() || '';
+        const comment = commentInput?.value.trim() || '';
+
+        if (!comment || comment.length < 3) {
+            if (statusDiv) statusDiv.innerHTML = `<div style="color:#dc2626; font-size:0.85rem;">⚠ Please write at least 3 characters in your review comment.</div>`;
+            return;
+        }
+
+        submitBtn.disabled = true;
+        const origText = submitBtn.textContent;
+        submitBtn.textContent = 'Publishing Review...';
+
+        try {
+            const token = sessionStorage.getItem('md_user_token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(`${API_BASE}/reviews`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    productId,
+                    rating: selectedRating,
+                    title,
+                    comment,
+                    customerName: authorName
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="fb-success-alert">✔ धन्यवाद! Your review has been published and is now visible to all farmers.</div>`;
+                }
+                showToast('✔ Review published successfully!');
+                if (commentInput) commentInput.value = '';
+                if (titleInput) titleInput.value = '';
+
+                // Reload reviews after short delay so the new review appears
+                setTimeout(() => {
+                    loadProductReviews(productId);
+                    const writeDrawer = document.getElementById('modal-write-review-box');
+                    const toggleBtn = document.getElementById('btn-toggle-modal-review-form');
+                    if (writeDrawer) writeDrawer.style.display = 'none';
+                    if (toggleBtn) toggleBtn.textContent = '★ Rate & Review Product';
+                }, 1500);
+            } else {
+                if (statusDiv) statusDiv.innerHTML = `<div style="color:#dc2626; font-size:0.85rem;">⚠ ${data.message || 'Error submitting review.'}</div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+            }
+        } catch (err) {
+            console.error('[Review Submit Error]', err);
+            if (statusDiv) statusDiv.innerHTML = `<div style="color:#dc2626; font-size:0.85rem;">⚠ Network error. Please try again.</div>`;
+            submitBtn.disabled = false;
+            submitBtn.textContent = origText;
+        }
+    });
+}
+
+// Post-Order Feedback Widget Logic (inside Checkout Success screen)
+function initPostOrderFeedbackWidget(orderId, customerName, purchasedItems) {
+    const starsPicker = document.getElementById('fb-stars-picker');
+    const ratingLabel = document.getElementById('fb-rating-text');
+    const submitBtn = document.getElementById('btn-submit-post-feedback');
+    const statusMsg = document.getElementById('fb-status-msg');
+    const productSelect = document.getElementById('fb-product-select');
+    const commentInput = document.getElementById('fb-review-comment');
+
+    if (!starsPicker || !submitBtn) return;
+
+    let selectedRating = 5;
+
+    const ratingTexts = {
+        1: '1 ★ - Poor Experience',
+        2: '2 ★ - Fair Quality',
+        3: '3 ★ - Good / Satisfactory',
+        4: '4 ★ - Very Good Quality',
+        5: '5 ★ - Outstanding Quality!'
+    };
+
+    function updateStars(val) {
+        starsPicker.querySelectorAll('.star-btn').forEach(btn => {
+            const r = parseInt(btn.getAttribute('data-rating'), 10);
+            if (r <= val) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        if (ratingLabel) ratingLabel.textContent = ratingTexts[val] || `${val} ★`;
+    }
+
+    starsPicker.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const r = parseInt(btn.getAttribute('data-rating'), 10);
+            updateStars(r);
+        });
+        starsPicker.addEventListener('mouseleave', () => {
+            updateStars(selectedRating);
+        });
+        btn.addEventListener('click', () => {
+            selectedRating = parseInt(btn.getAttribute('data-rating'), 10);
+            updateStars(selectedRating);
+        });
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const prodId = productSelect ? productSelect.value : (purchasedItems[0]?.id || 's1');
+        const prodObj = purchasedItems.find(p => p.id === prodId) || purchasedItems[0] || {};
+        const comment = (commentInput?.value.trim()) || 'Excellent product quality and prompt delivery. Highly recommended for farmers!';
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting Feedback...';
+
+        try {
+            const token = sessionStorage.getItem('md_user_token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(`${API_BASE}/reviews`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    productId: prodId,
+                    rating: selectedRating,
+                    title: `${selectedRating} Star Verified Feedback`,
+                    comment,
+                    orderId: orderId || null,
+                    customerName: customerName || (currentUser ? currentUser.name : 'Verified Farmer')
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                const widget = document.getElementById('post-order-feedback-widget');
+                if (widget) {
+                    widget.innerHTML = `
+                        <div class="fb-success-alert fade-in" style="margin:0;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <div>
+                                <strong>धन्यवाद, ${escapeHTML(customerName || 'Farmer')}!</strong><br>
+                                <span style="font-size:0.85rem;">Your verified feedback & ${selectedRating}★ rating for <strong>${escapeHTML(prodObj.name || 'product')}</strong> have been published. Other farmers can now see your review!</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                showToast('✔ Feedback published & visible to all farmers!');
+                // Update home page testimonials if on home page
+                loadRecentReviewsForHome();
+            } else {
+                if (statusMsg) statusMsg.innerHTML = `<div style="color:#dc2626; font-size:0.85rem; margin-top:8px;">⚠ ${data.message || 'Error submitting feedback.'}</div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Verified Review ★';
+            }
+        } catch (err) {
+            console.error('[Post-order feedback error]', err);
+            if (statusMsg) statusMsg.innerHTML = `<div style="color:#dc2626; font-size:0.85rem; margin-top:8px;">⚠ Network error. Please try again.</div>`;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Verified Review ★';
+        }
+    });
+}
+
+// Load recent verified customer reviews into Home page testimonials
+async function loadRecentReviewsForHome() {
+    const testimonialsRow = document.querySelector('.testimonials-row');
+    if (!testimonialsRow) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/reviews/recent`);
+        const data = await res.json();
+
+        if (res.ok && data.success && Array.isArray(data.reviews) && data.reviews.length > 0) {
+            // Take the top 3-4 most recent reviews
+            const reviewsToShow = data.reviews.slice(0, 3);
+            testimonialsRow.innerHTML = reviewsToShow.map(rev => {
+                const initials = (rev.customer_name || 'Farmer').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                const starStr = '⭐'.repeat(Math.min(5, Math.max(1, Math.round(rev.rating || 5))));
+                const productName = rev.product_name ? `<span style="display:inline-block; font-size:0.75rem; background:#dcfce7; color:#166534; font-weight:700; padding:2px 8px; border-radius:12px; margin-bottom:6px;">✔ Verified: ${escapeHTML(rev.product_name)}</span>` : '';
+
+                return `
+                    <div class="testimonial-card fade-in">
+                        <div style="margin-bottom:6px;">${productName}</div>
+                        <div class="test-stars">${starStr}</div>
+                        <p>"${escapeHTML(rev.comment || 'Excellent product and prompt service.')}"</p>
+                        <div class="user-profile">
+                            <div class="user-avatar-circle">${initials}</div>
+                            <div class="user-meta">
+                                <h4>${escapeHTML(rev.customer_name || 'Verified Farmer')}</h4>
+                                <span>Verified Buyer • ${rev.created_at ? new Date(rev.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : 'Recent'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        console.warn('[Home Testimonials] Could not fetch recent reviews:', err.message);
     }
 }
 
@@ -1428,200 +1920,7 @@ Guidelines:
         });
     }
 
-function showProductModal(productId) {
-    const product = PRODUCTS.find(p => p.id === productId);
-    if (!product) return;
 
-    const modal = document.getElementById('product-modal');
-    const modalContent = document.getElementById('product-modal-body');
-    if (!modal || !modalContent) return;
-
-    const tagsHTML = product.tags.map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
-
-    modalContent.innerHTML = `
-        <div class="modal-product-grid">
-            <div class="modal-product-image">
-                ${getProductSVG(product.image)}
-            </div>
-            <div class="modal-product-details">
-                <span class="badge category-badge">${product.category.toUpperCase()}</span>
-                <h2 class="modal-title">${product.name}</h2>
-                <div class="product-rating" style="margin-bottom:15px;">
-                    <div class="stars">
-                        ${renderStars(product.rating)}
-                    </div>
-                    <span class="rating-val">${product.rating} (${product.reviews} customer reviews)</span>
-                </div>
-                <p class="modal-desc">${product.description}</p>
-                
-                <div class="modal-meta">
-                    <div class="meta-item">
-                        <strong>Availability:</strong> <span class="text-success">In Stock (Fresh Batch)</span>
-                    </div>
-                    <div class="meta-item">
-                        <strong>Packaging Unit:</strong> <span>${product.unit}</span>
-                    </div>
-                </div>
-
-                <div class="modal-price-row">
-                    <div class="modal-price">
-                        <span class="currency">₹</span>
-                        <span class="amount">${product.price}</span>
-                        <span class="unit">/${product.unit.replace('per ', '')}</span>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn btn-primary btn-lg" id="modal-add-to-cart" data-id="${product.id}">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg> Add to Cart
-                    </button>
-                </div>
-                <div style="margin-top:15px;">${tagsHTML}</div>
-            </div>
-        </div>
-    `;
-
-    modal.classList.add('active');
-
-    // Add click handler inside modal
-    const modalAddBtn = document.getElementById('modal-add-to-cart');
-    if (modalAddBtn) {
-        modalAddBtn.addEventListener('click', () => {
-            addToCart(product.id);
-            modal.classList.remove('active');
-        });
-    }
-}
-
-// Render Crop Advisor Result
-function renderAdvisoryResult() {
-    const cropSelect = document.getElementById('advisory-crop');
-    const issueSelect = document.getElementById('advisory-issue');
-    const adviceBox = document.getElementById('advisory-result');
-
-    if (!cropSelect || !issueSelect || !adviceBox) return;
-
-    const crop = cropSelect.value;
-    const issue = issueSelect.value;
-
-    const data = ADVISORY_DATABASE[crop][issue];
-    if (!data) return;
-
-    // Get recommended products HTML
-    let productsHTML = '';
-    data.products.forEach(pId => {
-        const prod = PRODUCTS.find(p => p.id === pId);
-        if (prod) {
-            productsHTML += `
-                <div class="recommended-product-item" onclick="showProductModal('${prod.id}')">
-                    <div class="rec-thumb">${getProductSVG(prod.image)}</div>
-                    <div class="rec-details">
-                        <h5>${prod.name}</h5>
-                        <p class="rec-price">₹${prod.price} / ${prod.unit.replace('per ', '')}</p>
-                    </div>
-                    <button class="btn btn-secondary btn-xs" onclick="event.stopPropagation(); addToCart('${prod.id}')">Add</button>
-                </div>
-            `;
-        }
-    });
-
-    const tipsHTML = data.tips.map(tip => `<li>${tip}</li>`).join('');
-
-    adviceBox.innerHTML = `
-        <div class="advice-card fade-in">
-            <h4 class="advice-title">${data.title}</h4>
-            <p class="advice-text">${data.advice}</p>
-            
-            <div class="advice-tips">
-                <h5>Expert Action Steps:</h5>
-                <ul>
-                    ${tipsHTML}
-                </ul>
-            </div>
-
-            <div class="recommended-products-section">
-                <h5>Recommended Solutions:</h5>
-                <div class="recommended-products-list">
-                    ${productsHTML}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Toast notification helper
-function showToast(message) {
-    const existing = document.querySelector('.agro-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'agro-toast fade-in';
-    toast.innerHTML = `
-        <div class="toast-content">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" style="margin-right:8px;">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>${message}</span>
-        </div>
-    `;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.classList.add('fade-out');
-        setTimeout(() => toast.remove(), 400);
-    }, 2500);
-}
-
-// AI Agronomist Chatbot Logic
-function initChatbot() {
-    const chatbotToggle = document.getElementById('chatbot-toggle');
-    const chatbotContainer = document.getElementById('chatbot-container');
-    const chatbotClose = document.getElementById('chatbot-close');
-    const chatForm = document.getElementById('chat-form');
-    const chatInput = document.getElementById('chat-input');
-    const chatMessages = document.getElementById('chat-messages');
-    const quickReplies = document.querySelector('.quick-replies');
-
-    if (!chatbotToggle || !chatbotContainer || !chatbotClose || !chatForm || !chatInput || !chatMessages) return;
-
-    // Delegate click on Add-to-cart buttons inside chatbot messages
-    chatMessages.addEventListener('click', (e) => {
-        const buyBtn = e.target.closest('.chat-buy-btn');
-        if (buyBtn) {
-            const prodId = buyBtn.getAttribute('data-product-id');
-            if (prodId && typeof addToCart === 'function') {
-                addToCart(prodId);
-            }
-        }
-    });
-
-    // Toggle Chatbot
-    chatbotToggle.addEventListener('click', () => {
-        chatbotContainer.classList.toggle('active');
-        setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 100);
-    });
-
-    chatbotClose.addEventListener('click', () => {
-        chatbotContainer.classList.remove('active');
-    });
-
-    // Handle Quick Replies click
-    if (quickReplies) {
-        quickReplies.addEventListener('click', (e) => {
-            const pill = e.target.closest('.reply-pill');
-            if (pill) {
-                const text = pill.textContent.trim();
-                sendMessage(text);
-            }
-        });
-    }
 
     // Handle Form Submit
     chatForm.addEventListener('submit', (e) => {
@@ -2080,7 +2379,6 @@ function initChatbot() {
         };
     }
 }
-}
 
 // ════════════════════════════════════════════════════════════════════
 // ENTRY AUTHENTICATION GATEWAY & USER PROFILE MANAGEMENT
@@ -2177,8 +2475,10 @@ function renderUserHeaderUI() {
         if (signOutBtn) {
             signOutBtn.addEventListener('click', () => {
                 sessionStorage.removeItem('md_current_user');
+                sessionStorage.removeItem('md_user_token');
                 sessionStorage.removeItem('md_gateway_dismissed');
                 localStorage.removeItem('md_current_user');
+                localStorage.removeItem('md_user_token');
                 currentUser = null;
                 renderUserHeaderUI();
                 showToast('👋 Signed out successfully.');
@@ -2328,6 +2628,9 @@ function setupAuthEventListeners() {
                 const data = await res.json();
                 if (res.ok && data.success && data.user) {
                     authenticatedUser = data.user;
+                    if (data.token) {
+                        sessionStorage.setItem('md_user_token', data.token);
+                    }
                 } else if (!res.ok && data.message) {
                     throw new Error(data.message);
                 }
@@ -2413,6 +2716,9 @@ function setupAuthEventListeners() {
                 const data = await res.json();
                 if (res.ok && data.success && data.user) {
                     createdUser = data.user;
+                    if (data.token) {
+                        sessionStorage.setItem('md_user_token', data.token);
+                    }
                 } else if (!res.ok && res.status === 409) {
                     if (errElem) { errElem.textContent = '⚠ ' + (data.message || 'An account with this mobile number is already registered.'); errElem.style.display = 'block'; }
                     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Farmer Account'; }
@@ -2534,7 +2840,14 @@ async function openMyOrdersModal() {
 
     // 1. Fetch from live API
     try {
-        const res = await fetch(`${API_BASE}/auth/my-orders?phone=${encodeURIComponent(currentUser.phone)}&userId=${currentUser.id || ''}`);
+        const userToken = sessionStorage.getItem('md_user_token');
+        const reqHeaders = {};
+        if (userToken) {
+            reqHeaders['Authorization'] = `Bearer ${userToken}`;
+        }
+        const res = await fetch(`${API_BASE}/auth/my-orders?phone=${encodeURIComponent(currentUser.phone)}&userId=${currentUser.id || ''}`, {
+            headers: reqHeaders
+        });
         const data = await res.json();
         if (res.ok && data.success && Array.isArray(data.orders)) {
             orders = data.orders;

@@ -10,6 +10,7 @@ const router   = express.Router();
 const { body, validationResult } = require('express-validator');
 const pool     = require('../db');
 const memoryStore = require('../memoryStore');
+const { optionalToken } = require('../middleware/auth');
 
 // ── Validation rules ─────────────────────────────────────────────────────
 const orderValidation = [
@@ -26,7 +27,7 @@ const orderValidation = [
   body('address')
     .trim()
     .notEmpty().withMessage('Delivery address is required.')
-    .isLength({ min: 10 }).withMessage('Please enter a more detailed address.'),
+    .isLength({ min: 3 }).withMessage('Please enter a valid address (min 3 characters).'),
 
   body('items')
     .isArray({ min: 1 }).withMessage('Order must contain at least one item.'),
@@ -40,7 +41,7 @@ const orderValidation = [
 ];
 
 // ── POST /api/orders ──────────────────────────────────────────────────────
-router.post('/', orderValidation, async (req, res) => {
+router.post('/', optionalToken, orderValidation, async (req, res) => {
   // Validate input
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -48,6 +49,7 @@ router.post('/', orderValidation, async (req, res) => {
   }
 
   const { customerName, phone, address, notes, items, userId } = req.body;
+  const effectiveUserId = (req.user && req.user.id) ? req.user.id : (userId || null);
   let conn;
 
   try {
@@ -94,7 +96,7 @@ router.post('/', orderValidation, async (req, res) => {
       [orderResult] = await conn.execute(
         `INSERT INTO orders (customer_name, phone, address, total_amount, notes, user_id)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [customerName, phone, address, totalAmount, notes || null, userId || null]
+        [customerName, phone, address, totalAmount, notes || null, effectiveUserId || null]
       );
     } catch (insertErr) {
       [orderResult] = await conn.execute(

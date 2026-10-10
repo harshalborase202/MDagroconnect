@@ -1,14 +1,18 @@
 // backend/routes/auth.js
-// User / Farmer Authentication & Account Management
+// User / Farmer Authentication & Account Management with JWT & bcrypt
 
 const express = require('express');
 const router  = express.Router();
+const bcrypt  = require('bcryptjs');
 const pool    = require('../db');
 const memoryStore = require('../memoryStore');
+const { signToken, verifyToken, optionalToken } = require('../middleware/auth');
 
-// Helper to generate a session token
-function generateToken(user) {
-  return 'md_usr_' + Buffer.from(`${user.id || user.phone}:${Date.now()}`).toString('base64');
+// Helper to sanitize user object before sending in response
+function sanitizeUser(user) {
+  const clean = { ...user };
+  delete clean.password;
+  return clean;
 }
 
 // ── POST /api/auth/register ──────────────────────────────────────────────────
@@ -41,11 +45,14 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Insert user
+    // Secure password hashing with bcrypt
+    const hashedPassword = await bcrypt.hash(String(password), 10);
+
+    // Insert user into MySQL
     const [result] = await pool.execute(
       `INSERT INTO users (name, phone, email, password, location, role, is_active)
        VALUES (?, ?, ?, ?, ?, 'farmer', 1)`,
-      [cleanName, cleanPhone, cleanEmail, String(password), cleanLoc]
+      [cleanName, cleanPhone, cleanEmail, hashedPassword, cleanLoc]
     );
 
     const newUser = {
@@ -59,8 +66,15 @@ router.post('/register', async (req, res) => {
       created_at: new Date().toISOString(),
     };
 
-    memoryStore.addUser(newUser);
-    const token = generateToken(newUser);
+    memoryStore.addUser({ ...newUser, password: hashedPassword });
+
+    // Issue cryptographic JWT
+    const token = signToken({
+      id: newUser.id,
+      phone: newUser.phone,
+      name: newUser.name,
+      role: newUser.role,
+    });
 
     return res.status(201).json({
       success: true,
@@ -70,7 +84,7 @@ router.post('/register', async (req, res) => {
     });
   } catch (err) {
     console.warn('[auth] MySQL unavailable, using resilient memory store:', err.message);
-    
+
     // Check memoryStore for duplicates
     const existing = memoryStore.findUserByPhoneOrEmail(cleanPhone);
     if (existing) {
@@ -80,13 +94,15 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(String(password), 10);
+
     const newUser = {
       id: Date.now(),
       name: cleanName,
       phone: cleanPhone,
       email: cleanEmail,
       location: cleanLoc,
-      password: String(password),
+      password: hashedPassword,
       role: 'farmer',
       is_active: 1,
       created_at: new Date().toISOString(),
@@ -96,10 +112,13 @@ router.post('/register', async (req, res) => {
 
     memoryStore.addUser(newUser);
 
-    const clientUser = { ...newUser };
-    delete clientUser.password;
-
-    const token = generateToken(newUser);
+    const clientUser = sanitizeUser(newUser);
+    const token = signToken({
+      id: newUser.id,
+      phone: newUser.phone,
+      name: newUser.name,
+      role: newUser.role,
+    });
 
     return res.status(201).json({
       success: true,
@@ -137,7 +156,27 @@ router.post('/login', async (req, res) => {
 
     const user = rows[0];
 
-    if (user.password !== String(password)) {
+    // Verify bcrypt hash or support legacy plain text passwords seamlessly
+    let isPasswordValid = false;
+    if (user.password) {
+      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+        isPasswordValid = await bcrypt.compare(String(password), user.password);
+      } else {
+        // Legacy plain text check
+        isPasswordValid = user.password === String(password);
+        if (isPasswordValid) {
+          // Opportunistically upgrade plain password to bcrypt hash in DB
+          try {
+            const upgradedHash = await bcrypt.hash(String(password), 10);
+            await pool.execute('UPDATE users SET password = ? WHERE id = ?', [upgradedHash, user.id]);
+          } catch (e) {
+            console.warn('[auth] Password upgrade notice:', e.message);
+          }
+        }
+      }
+    }
+
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
         message: 'Incorrect password. Please try again.',
@@ -151,22 +190,28 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    delete user.password;
+    const clientUser = sanitizeUser(user);
 
-    const token = generateToken(user);
+    // Issue cryptographic JWT
+    const token = signToken({
+      id: user.id,
+      phone: user.phone,
+      name: user.name,
+      role: user.role || 'farmer',
+    });
 
     return res.json({
       success: true,
       message: `Welcome back, ${user.name}!`,
       token,
-      user,
+      user: clientUser,
     });
   } catch (err) {
     console.warn('[auth] MySQL unavailable, checking resilient memory store:', err.message);
     const user = memoryStore.findUserByPhoneOrEmail(queryId);
 
     if (!user) {
-      // Default demo account
+      // Default demo account fallback
       if (queryId === '9822145670' && (password === 'farmer123' || password === '1234')) {
         const demoUser = {
           id: 1,
@@ -177,7 +222,12 @@ router.post('/login', async (req, res) => {
           role: 'farmer',
           is_active: 1
         };
-        const token = generateToken(demoUser);
+        const token = signToken({
+          id: demoUser.id,
+          phone: demoUser.phone,
+          name: demoUser.name,
+          role: demoUser.role,
+        });
         return res.json({
           success: true,
           message: `Welcome back, ${demoUser.name}!`,
@@ -192,7 +242,18 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    if (user.password && user.password !== String(password) && String(password) !== 'farmer123' && String(password) !== '1234') {
+    let isPasswordValid = false;
+    if (user.password) {
+      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+        isPasswordValid = await bcrypt.compare(String(password), user.password);
+      } else {
+        isPasswordValid = (user.password === String(password) || String(password) === 'farmer123' || String(password) === '1234');
+      }
+    } else {
+      isPasswordValid = (String(password) === 'farmer123' || String(password) === '1234');
+    }
+
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
         message: 'Incorrect password. Please try again.',
@@ -206,10 +267,13 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const clientUser = { ...user };
-    delete clientUser.password;
-
-    const token = generateToken(user);
+    const clientUser = sanitizeUser(user);
+    const token = signToken({
+      id: user.id,
+      phone: user.phone,
+      name: user.name,
+      role: user.role || 'farmer',
+    });
 
     return res.json({
       success: true,
@@ -220,14 +284,58 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ── GET /api/auth/me ─────────────────────────────────────────────────────────
+// Verify current JWT session and return authenticated farmer profile
+router.get('/me', verifyToken, async (req, res) => {
+  const userId = req.user.id;
+  const userPhone = req.user.phone;
+
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id, name, phone, email, location, role, is_active, created_at FROM users WHERE id = ? OR phone = ? LIMIT 1',
+      [userId, userPhone]
+    );
+
+    if (rows.length > 0) {
+      return res.json({
+        success: true,
+        user: rows[0],
+      });
+    }
+  } catch (err) {
+    console.warn('[auth] GET /me MySQL query failed, using decoded token / memoryStore:', err.message);
+  }
+
+  const memoryUser = memoryStore.findUserByPhoneOrEmail(userPhone);
+  if (memoryUser) {
+    return res.json({
+      success: true,
+      user: sanitizeUser(memoryUser),
+    });
+  }
+
+  // Fallback to token payload
+  return res.json({
+    success: true,
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+      phone: req.user.phone,
+      role: req.user.role,
+    },
+  });
+});
+
 // ── GET /api/auth/my-orders ──────────────────────────────────────────────────
-router.get('/my-orders', async (req, res) => {
-  const { phone, userId } = req.query;
+// Fetch orders with JWT token or phone/userId
+router.get('/my-orders', optionalToken, async (req, res) => {
+  const phone = req.query.phone || (req.user ? req.user.phone : null);
+  const userId = req.query.userId || (req.user ? req.user.id : null);
 
   if (!phone && !userId) {
     return res.status(400).json({
       success: false,
-      message: 'User phone or ID is required to fetch orders.',
+      message: 'User authentication token, phone, or ID is required to fetch orders.',
     });
   }
 

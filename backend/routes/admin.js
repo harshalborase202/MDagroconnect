@@ -5,6 +5,7 @@ const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
 const memoryStore = require('../memoryStore');
+const { signToken, verifyToken, requireAdmin } = require('../middleware/auth');
 
 // Configurable admin credentials (defaults for initial setup)
 const ADMIN_USER = process.env.ADMIN_USERNAME || 'mdagro';
@@ -22,8 +23,13 @@ router.post('/login', (req, res) => {
   }
 
   if (username === ADMIN_USER && password === ADMIN_PASS) {
-    // Return simulated token and session profile
-    const token = 'md_adm_' + Buffer.from(`${username}:${Date.now()}`).toString('base64');
+    // Generate cryptographically signed JWT token for administrator
+    const token = signToken({
+      username: ADMIN_USER,
+      name: 'MD Agro Store Administrator',
+      role: 'admin',
+    });
+
     return res.json({
       success: true,
       message: 'Admin authenticated successfully.',
@@ -31,7 +37,7 @@ router.post('/login', (req, res) => {
       user: {
         username: ADMIN_USER,
         name: 'MD Agro Store Administrator',
-        role: 'Store Manager',
+        role: 'admin',
       },
     });
   }
@@ -41,6 +47,9 @@ router.post('/login', (req, res) => {
     message: 'Invalid administrator credentials. Please check your username and password.',
   });
 });
+
+// Protect all subsequent administrative routes with JWT authentication & admin role guard
+router.use(verifyToken, requireAdmin);
 
 // ── GET /api/admin/overview ────────────────────────────────────────────────
 router.get('/overview', async (req, res) => {
