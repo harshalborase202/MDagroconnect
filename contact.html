@@ -34,6 +34,7 @@
                 <a href="advisor.html">Crop Advisor</a>
                 <a href="services.html">Seasonal Guides</a>
                 <a href="contact.html" class="active">Contact Us</a>
+                <a href="#track-order" class="nav-track-link" onclick="openTrackOrderModal(event)">📦 Track Order</a>
             </nav>
             
             <div class="header-actions">
@@ -319,6 +320,20 @@
                         <div class="form-group-sm">
                             <input type="text" placeholder="Delivery Address" required id="chk-address">
                         </div>
+
+                        <!-- Payment Options: COD vs Dynamic UPI QR -->
+                        <div class="payment-method-selector">
+                            <label class="pay-method-opt">
+                                <input type="radio" name="pay_mode" value="cod" checked onchange="toggleCheckoutPayMode(this.value)">
+                                <span>💵 Cash on Delivery / Pay on Pickup</span>
+                            </label>
+                            <label class="pay-method-opt">
+                                <input type="radio" name="pay_mode" value="upi" onchange="toggleCheckoutPayMode(this.value)">
+                                <span>⚡ Pay via UPI QR (GPay / PhonePe / Paytm)</span>
+                            </label>
+                        </div>
+                        <div id="upi-qr-section" class="upi-qr-box" style="display:none;"></div>
+
                         <button type="submit" class="btn btn-primary btn-block" id="cart-checkout-btn" disabled>Confirm & Order</button>
                     </form>
                 </div>
@@ -370,8 +385,11 @@
                 <button class="reply-pill">Delivery Time</button>
             </div>
             
-            <form id="chat-form" class="chatbot-input-form" onsubmit="event.preventDefault(); return false;">
-                <input type="text" id="chat-input" placeholder="Ask a farming question..." required autocomplete="off">
+            <form id="chat-form" class="chatbot-input-form">
+                <input type="text" id="chat-input" placeholder="Ask a farming question or tap mic..." required autocomplete="off">
+                <button type="button" class="chat-mic-btn" id="chat-voice-btn" title="Voice Input (बोलून प्रश्न विचारा)" onclick="toggleChatVoice()">
+                    🎤
+                </button>
                 <button type="submit" class="send-btn" aria-label="Send Message">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -379,6 +397,32 @@
                     </svg>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         LIVE ORDER TRACKING MODAL (FARMER PORTAL)
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="modal" id="track-order-modal">
+        <div class="modal-overlay" onclick="closeTrackOrderModal()"></div>
+        <div class="modal-content track-modal-content">
+            <button class="modal-close" onclick="closeTrackOrderModal()">&times;</button>
+            <div class="track-modal-header">
+                <div class="track-badge-icon">📦</div>
+                <h3>Track Your Agricultural Order</h3>
+                <p>Enter your <strong>Order ID</strong> (e.g. 899711) or registered <strong>10-digit mobile number</strong> to check live fulfillment and delivery status.</p>
+            </div>
+            
+            <form id="track-order-search-form" onsubmit="handleTrackOrderSearch(event)">
+                <div class="track-search-bar">
+                    <input type="text" id="track-order-input" placeholder="e.g. 899711 or 9822334455" required autocomplete="off">
+                    <button type="submit" class="btn btn-primary" id="btn-track-submit">
+                        <span>Check Status</span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="track-order-result" class="track-order-result" style="display:none;"></div>
         </div>
     </div>
 
@@ -414,6 +458,7 @@
 
                     <!-- Farmer Login Form -->
                     <form id="farmer-login-form" class="gateway-form">
+                        
                         <div class="gw-form-group">
                             <label for="farmer-login-phone">Mobile Number or Email</label>
                             <input type="text" id="farmer-login-phone" placeholder="Enter 10-digit mobile or email" required>
@@ -468,17 +513,17 @@
                             <span>🛡️ MD Agro Official Administration</span>
                         </div>
                         <p>Authorized access for store management, orders processing, catalog updates, and farmer customer logs.</p>
-                        <form id="gw-admin-login-form" class="gateway-form">
+                        <form id="gw-admin-login-form" class="gateway-form" onsubmit="return handleGatewayAdminLogin(event);">
                             <div class="gw-form-group">
                                 <label for="gw-admin-user">Admin Username</label>
-                                <input type="text" id="gw-admin-user" placeholder="Enter admin username" required autocomplete="username">
+                                <input type="text" id="gw-admin-user" placeholder="Enter admin username" required autocomplete="username" onkeydown="if(event.key==='Enter'){handleGatewayAdminLogin(event);}">
                             </div>
                             <div class="gw-form-group">
                                 <label for="gw-admin-pass">Admin Password</label>
-                                <input type="password" id="gw-admin-pass" placeholder="Enter admin password" required autocomplete="current-password">
+                                <input type="password" id="gw-admin-pass" placeholder="Enter admin password" required autocomplete="current-password" onkeydown="if(event.key==='Enter'){handleGatewayAdminLogin(event);}">
                             </div>
                             <div id="gw-admin-error" class="gw-error" style="display:none;"></div>
-                            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-gw-admin-submit">
+                            <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-gw-admin-submit" onclick="handleGatewayAdminLogin(event)">
                                 <span>Enter Store Admin Dashboard ➔</span>
                             </button>
                         </form>
@@ -509,6 +554,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2.0"></script>
 </body>
 </html>

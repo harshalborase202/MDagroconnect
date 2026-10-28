@@ -34,6 +34,7 @@
                 <a href="advisor.html">Crop Advisor</a>
                 <a href="services.html" class="active">Seasonal Guides</a>
                 <a href="contact.html">Contact Us</a>
+                <a href="#track-order" class="nav-track-link" onclick="openTrackOrderModal(event)">📦 Track Order</a>
             </nav>
             
             <div class="header-actions">
@@ -266,6 +267,20 @@
                         <div class="form-group-sm">
                             <input type="text" placeholder="Delivery Address" required id="chk-address">
                         </div>
+
+                        <!-- Payment Options: COD vs Dynamic UPI QR -->
+                        <div class="payment-method-selector">
+                            <label class="pay-method-opt">
+                                <input type="radio" name="pay_mode" value="cod" checked onchange="toggleCheckoutPayMode(this.value)">
+                                <span>💵 Cash on Delivery / Pay on Pickup</span>
+                            </label>
+                            <label class="pay-method-opt">
+                                <input type="radio" name="pay_mode" value="upi" onchange="toggleCheckoutPayMode(this.value)">
+                                <span>⚡ Pay via UPI QR (GPay / PhonePe / Paytm)</span>
+                            </label>
+                        </div>
+                        <div id="upi-qr-section" class="upi-qr-box" style="display:none;"></div>
+
                         <button type="submit" class="btn btn-primary btn-block" id="cart-checkout-btn" disabled>Confirm & Order</button>
                     </form>
                 </div>
@@ -317,8 +332,11 @@
                 <button class="reply-pill">Delivery Time</button>
             </div>
             
-            <form id="chat-form" class="chatbot-input-form" onsubmit="event.preventDefault(); return false;">
-                <input type="text" id="chat-input" placeholder="Ask a farming question..." required autocomplete="off">
+            <form id="chat-form" class="chatbot-input-form">
+                <input type="text" id="chat-input" placeholder="Ask a farming question or tap mic..." required autocomplete="off">
+                <button type="button" class="chat-mic-btn" id="chat-voice-btn" title="Voice Input (बोलून प्रश्न विचारा)" onclick="toggleChatVoice()">
+                    🎤
+                </button>
                 <button type="submit" class="send-btn" aria-label="Send Message">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -326,6 +344,32 @@
                     </svg>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         LIVE ORDER TRACKING MODAL (FARMER PORTAL)
+         ════════════════════════════════════════════════════════════════════ -->
+    <div class="modal" id="track-order-modal">
+        <div class="modal-overlay" onclick="closeTrackOrderModal()"></div>
+        <div class="modal-content track-modal-content">
+            <button class="modal-close" onclick="closeTrackOrderModal()">&times;</button>
+            <div class="track-modal-header">
+                <div class="track-badge-icon">📦</div>
+                <h3>Track Your Agricultural Order</h3>
+                <p>Enter your <strong>Order ID</strong> (e.g. 899711) or registered <strong>10-digit mobile number</strong> to check live fulfillment and delivery status.</p>
+            </div>
+            
+            <form id="track-order-search-form" onsubmit="handleTrackOrderSearch(event)">
+                <div class="track-search-bar">
+                    <input type="text" id="track-order-input" placeholder="e.g. 899711 or 9822334455" required autocomplete="off">
+                    <button type="submit" class="btn btn-primary" id="btn-track-submit">
+                        <span>Check Status</span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="track-order-result" class="track-order-result" style="display:none;"></div>
         </div>
     </div>
 
@@ -361,6 +405,7 @@
 
                     <!-- Farmer Login Form -->
                     <form id="farmer-login-form" class="gateway-form">
+                        
                         <div class="gw-form-group">
                             <label for="farmer-login-phone">Mobile Number or Email</label>
                             <input type="text" id="farmer-login-phone" placeholder="Enter 10-digit mobile or email" required>
@@ -415,17 +460,17 @@
                             <span>🛡️ MD Agro Official Administration</span>
                         </div>
                         <p>Authorized access for store management, orders processing, catalog updates, and farmer customer logs.</p>
-                        <form id="gw-admin-login-form" class="gateway-form">
+                        <form id="gw-admin-login-form" class="gateway-form" onsubmit="return handleGatewayAdminLogin(event);">
                             <div class="gw-form-group">
                                 <label for="gw-admin-user">Admin Username</label>
-                                <input type="text" id="gw-admin-user" placeholder="Enter admin username" required autocomplete="username">
+                                <input type="text" id="gw-admin-user" placeholder="Enter admin username" required autocomplete="username" onkeydown="if(event.key==='Enter'){handleGatewayAdminLogin(event);}">
                             </div>
                             <div class="gw-form-group">
                                 <label for="gw-admin-pass">Admin Password</label>
-                                <input type="password" id="gw-admin-pass" placeholder="Enter admin password" required autocomplete="current-password">
+                                <input type="password" id="gw-admin-pass" placeholder="Enter admin password" required autocomplete="current-password" onkeydown="if(event.key==='Enter'){handleGatewayAdminLogin(event);}">
                             </div>
                             <div id="gw-admin-error" class="gw-error" style="display:none;"></div>
-                            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-gw-admin-submit">
+                            <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-gw-admin-submit" onclick="handleGatewayAdminLogin(event)">
                                 <span>Enter Store Admin Dashboard ➔</span>
                             </button>
                         </form>
@@ -456,6 +501,157 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Floating Customer Demo & Feedback Trigger -->
+    <div class="demo-feedback-float" id="demo-feedback-float">
+        <button class="btn-demo-float" onclick="openDemoFeedbackModal('tour')" title="Open Customer Demo & Feedback Hub">
+            <span class="float-icon">🎯</span>
+            <span class="float-text">Demo & Feedback Hub</span>
+        </button>
+    </div>
+
+    <!-- Customer Demo & Feedback Modal -->
+    <div class="auth-gateway-modal" id="demo-feedback-modal">
+        <div class="auth-gateway-backdrop" onclick="closeDemoFeedbackModal()"></div>
+        <div class="auth-gateway-card modal-demo-feedback">
+            <button class="gateway-close-btn" onclick="closeDemoFeedbackModal()">&times;</button>
+            <div class="gateway-header">
+                <h3>🎯 Customer Demo & Feedback Hub</h3>
+                <p>Interactive demonstration checkpoints, JWT token inspection & customer feedback collection</p>
+                <div class="demo-tabs-nav">
+                    <button class="demo-tab-btn active" id="tab-btn-tour" onclick="switchDemoTab('tour')">🌟 1. Guided Demo Tour</button>
+                    <button class="demo-tab-btn" id="tab-btn-feedback" onclick="switchDemoTab('feedback')">📝 2. Customer Feedback</button>
+                    <button class="demo-tab-btn" id="tab-btn-jwt" onclick="switchDemoTab('jwt')">🔐 3. JWT Security Inspector</button>
+                </div>
+            </div>
+            <div class="gateway-body">
+                <!-- Tab 1: Guided Demo Tour -->
+                <div class="demo-tab-content active" id="demo-tour-pane">
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.85rem; color:#166534;">
+                        💡 <strong>Welcome Customer / Evaluator!</strong> Use these quick checkpoints to verify all deliverables of MD Agro Connect:
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>🔐 Checkpoint 1: JWT Authentication & Role Guards</h5>
+                            <p>Stateless cryptographic JSON Web Tokens for Farmer and Admin sessions with HMAC-SHA256 signature.</p>
+                        </div>
+                        <div style="display:flex; gap:6px; flex-shrink:0;">
+                            <button class="btn btn-xs btn-primary" onclick="quickDemoLogin('farmer')">Test Farmer JWT</button>
+                            <button class="btn btn-xs btn-outline" onclick="switchDemoTab('jwt')">Inspect JWT</button>
+                        </div>
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>🌾 Checkpoint 2: Certified Products & Catalog</h5>
+                            <p>Explore fertilizers, pest protection, hybrid seeds with filters and language toggle.</p>
+                        </div>
+                        <a href="products.html" class="btn btn-xs btn-primary" style="flex-shrink:0;">Browse Catalog</a>
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>🤖 Checkpoint 3: Agro AI Crop Doctor Chatbot</h5>
+                            <p>Ask smart farming questions in English or Marathi (कापूस, गहू, खते) with voice mic input.</p>
+                        </div>
+                        <button class="btn btn-xs btn-primary" onclick="closeDemoFeedbackModal(); document.getElementById('chatbot-toggle').click();" style="flex-shrink:0;">Open AI Bot</button>
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>💳 Checkpoint 4: Cart & Dynamic UPI QR Checkout</h5>
+                            <p>Add products, select UPI or Cash on Delivery, and generate a dynamic QR with live amount.</p>
+                        </div>
+                        <button class="btn btn-xs btn-primary" onclick="closeDemoFeedbackModal(); if(PRODUCTS.length) addToCart(PRODUCTS[0].id); openCartDrawer();" style="flex-shrink:0;">Test Cart</button>
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>📦 Checkpoint 5: Live Order Tracking & Stepper</h5>
+                            <p>View fulfillment timeline (Placed ➔ Confirmed ➔ Dispatched ➔ Delivered) linked to your JWT session.</p>
+                        </div>
+                        <button class="btn btn-xs btn-primary" onclick="closeDemoFeedbackModal(); openMyOrdersModal();" style="flex-shrink:0;">View Orders</button>
+                    </div>
+
+                    <div class="demo-checkpoint-card">
+                        <div class="demo-checkpoint-info">
+                            <h5>🛡️ Checkpoint 6: Store Admin Management Portal</h5>
+                            <p>Protected with admin JWT: manage inventory stock status, dispatch orders, review metrics.</p>
+                        </div>
+                        <button class="btn btn-xs btn-primary" onclick="quickDemoLogin('admin')" style="flex-shrink:0;">Admin Portal ➔</button>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Customer Feedback Form -->
+                <div class="demo-tab-content" id="demo-feedback-pane" style="display:none;">
+                    <form onsubmit="submitCustomerFeedback(event)">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div>
+                                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Your Name *</label>
+                                <input type="text" id="fb-customer-name" class="form-control" placeholder="e.g. Anand Shinde" required style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Mobile Number</label>
+                                <input type="tel" id="fb-customer-phone" class="form-control" placeholder="e.g. 9822100000" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                            <div>
+                                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Your Role</label>
+                                <select id="fb-customer-role" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <option value="Farmer / Customer">Farmer / Customer</option>
+                                    <option value="Agri Retailer">Agri Retailer</option>
+                                    <option value="Store Administrator">Store Administrator</option>
+                                    <option value="Evaluator / Reviewer">Evaluator / Reviewer</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Feedback Category</label>
+                                <select id="fb-category" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                                    <option value="JWT Security & Login">JWT Security & Login</option>
+                                    <option value="Product Catalog & Pricing">Product Catalog & Pricing</option>
+                                    <option value="AI Crop Doctor Assistant">AI Crop Doctor Assistant</option>
+                                    <option value="Order & UPI Payment Flow">Order & UPI Payment Flow</option>
+                                    <option value="Mobile UX & Ease of Use">Mobile UX & Ease of Use</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Overall Rating</label>
+                            <div class="star-rating-select">
+                                <label><input type="radio" name="fb_rating" value="5" checked> ⭐⭐⭐⭐⭐ (Excellent)</label>
+                                <label style="margin-left:12px;"><input type="radio" name="fb_rating" value="4"> ⭐⭐⭐⭐ (Good)</label>
+                                <label style="margin-left:12px;"><input type="radio" name="fb_rating" value="3"> ⭐⭐⭐ (Average)</label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Feedback & Suggestions *</label>
+                            <textarea id="fb-comments" rows="3" placeholder="What did you like about the demo? Any requested features or changes?" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; font-family:inherit;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" id="btn-submit-feedback" style="width:100%; padding:12px; font-weight:700;">
+                            🚀 Submit Customer Feedback
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tab 3: JWT Inspector -->
+                <div class="demo-tab-content" id="demo-jwt-pane" style="display:none;">
+                    <p style="font-size:0.85rem; color:#64748b; margin-top:0;">
+                        Inspect the current active JSON Web Token payload, cryptographic algorithm (HMAC-SHA256), and claims issued by the MD Agro backend:
+                    </p>
+                    <div id="jwt-inspector-output">
+                        <!-- Populated dynamically by updateJwtInspector() -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="app.js?v=2.0"></script>
 </body>
 </html>

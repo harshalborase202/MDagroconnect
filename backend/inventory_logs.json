@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "product_id": "s1",
+    "product_name": "Premium Hybrid Cotton Seeds (Bt-II)",
+    "change_type": "restock",
+    "quantity_change": 150,
+    "quantity_after": 150,
+    "reference_id": "PO-2026-001",
+    "note": "Opening warehouse stock",
+    "created_by": "system",
+    "created_at": "2026-10-25T19:00:02.555Z"
+  },
+  {
+    "id": 2,
+    "product_id": "s2",
+    "product_name": "Golden Wheat Premium Seeds (HD-2967)",
+    "change_type": "restock",
+    "quantity_change": 120,
+    "quantity_after": 120,
+    "reference_id": "PO-2026-001",
+    "note": "Opening warehouse stock",
+    "created_by": "system",
+    "created_at": "2026-10-25T19:00:02.555Z"
+  }
+]

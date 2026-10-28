@@ -63,6 +63,9 @@ app.use('/api/advisory',   require('./routes/advisory'));
 app.use('/api/chat',       require('./routes/chat'));
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/firebase',   require('./routes/firebase'));
+app.use('/api/feedback',   require('./routes/feedback'));
+app.use('/api/inventory',  require('./routes/inventory'));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
