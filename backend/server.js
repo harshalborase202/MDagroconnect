@@ -67,6 +67,14 @@ app.use('/api/firebase',   require('./routes/firebase'));
 app.use('/api/feedback',   require('./routes/feedback'));
 app.use('/api/inventory',  require('./routes/inventory'));
 
+// ── Serve Frontend Static Files ───────────────────────────────────────────
+const FRONTEND_DIR = path.join(__dirname, '..');
+app.use(express.static(FRONTEND_DIR));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
+});
+
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route "${req.method} ${req.path}" not found.` });
