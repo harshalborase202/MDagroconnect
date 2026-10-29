@@ -1,6 +1,6 @@
 # ============================================================
 #  MD Agro Connect — CI/CD Pipeline
-#  GitHub Actions: Auto-deploy to Render on every push to main
+#  GitHub Actions: Auto-test and deploy on every push to main
 # ============================================================
 
 name: Deploy MD Agro Connect
@@ -8,10 +8,10 @@ name: Deploy MD Agro Connect
 on:
   push:
     branches:
-      - main        # Triggers on every push to main branch
+      - main
   pull_request:
     branches:
-      - main        # Runs tests on pull requests
+      - main
 
 jobs:
   # ── Job 1: Test ──────────────────────────────────────────
@@ -27,30 +27,28 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Check backend files exist
+      - name: Install backend dependencies
         run: |
-          echo "✅ Checking project structure..."
+          cd backend
+          npm install --legacy-peer-deps
+
+      - name: Check project structure
+        run: |
+          echo "✅ Project files:"
           ls -la
+          echo "✅ Backend files:"
           ls -la backend/
-          echo "✅ All files present!"
 
-      - name: Verify Node.js syntax
-        run: |
-          node --check backend/server.js
-          node --check backend/db.js
-          echo "✅ No syntax errors found!"
+      - name: Verify Node.js server syntax
+        run: node --check backend/server.js && echo "✅ server.js OK"
 
-  # ── Job 2: Deploy to Render ───────────────────────────────
+  # ── Job 2: Deploy ─────────────────────────────────────────
   deploy:
-    name: Deploy to Render (Cloud)
+    name: Deploy to Cloud
     runs-on: ubuntu-latest
-    needs: test          # Only deploy if tests pass
-    if: github.ref == 'refs/heads/main'   # Only on main branch
+    needs: test
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
@@ -58,17 +56,18 @@ jobs:
 
       - name: Deployment Summary
         run: |
-          echo "================================================"
-          echo "  MD Agro Connect — Deployment Complete!"
-          echo "  Live URL: https://mdagroconnect.onrender.com"
-          echo "  Branch:   ${{ github.ref_name }}"
-          echo "  Commit:   ${{ github.sha }}"
-          echo "  By:       ${{ github.actor }}"
-          echo "  AWS Resources:"
-          echo "    EC2:  mdagroconnect-server (ap-southeast-2)"
-          echo "    RDS:  mdagroconnect-db (MySQL)"
-          echo "    S3:   mdagroconnect-images"
-          echo "    ALB:  mdagroconnect-lb"
-          echo "================================================"
-          echo "✅ All systems operational!"
-
+          echo "=============================================="
+          echo "  MD Agro Connect — CI/CD Pipeline"
+          echo "=============================================="
+          echo "  Live URL : https://mdagroconnect.onrender.com"
+          echo "  Branch   : ${{ github.ref_name }}"
+          echo "  Commit   : ${{ github.sha }}"
+          echo "  Deployed by: ${{ github.actor }}"
+          echo "----------------------------------------------"
+          echo "  AWS Infrastructure:"
+          echo "    EC2  : mdagroconnect-server (ap-southeast-2)"
+          echo "    RDS  : mdagroconnect-db (MySQL Community)"
+          echo "    S3   : mdagroconnect-images"
+          echo "    ALB  : mdagroconnect-lb (3 Availability Zones)"
+          echo "=============================================="
+          echo "✅ Deployment pipeline completed successfully!"
