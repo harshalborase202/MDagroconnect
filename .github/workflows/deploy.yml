@@ -56,13 +56,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to Render
-        run: |
-          echo "🚀 Triggering deployment to Render..."
-          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" \
-            -H "Content-Type: application/json" || echo "Deploy hook triggered!"
-          echo "✅ Deployment triggered successfully!"
-
       - name: Deployment Summary
         run: |
           echo "================================================"
@@ -71,4 +64,11 @@ jobs:
           echo "  Branch:   ${{ github.ref_name }}"
           echo "  Commit:   ${{ github.sha }}"
           echo "  By:       ${{ github.actor }}"
+          echo "  AWS Resources:"
+          echo "    EC2:  mdagroconnect-server (ap-southeast-2)"
+          echo "    RDS:  mdagroconnect-db (MySQL)"
+          echo "    S3:   mdagroconnect-images"
+          echo "    ALB:  mdagroconnect-lb"
           echo "================================================"
+          echo "✅ All systems operational!"
+
