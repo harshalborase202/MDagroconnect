@@ -16,3 +16,5 @@ fix_inventory_frontend.js
 
 backend/setup_aiven_db.js
 backend/view_data.js
+
+backend/seed_cloud.js
