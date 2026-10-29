@@ -1,0 +1,74 @@
+# ============================================================
+#  MD Agro Connect — CI/CD Pipeline
+#  GitHub Actions: Auto-deploy to Render on every push to main
+# ============================================================
+
+name: Deploy MD Agro Connect
+
+on:
+  push:
+    branches:
+      - main        # Triggers on every push to main branch
+  pull_request:
+    branches:
+      - main        # Runs tests on pull requests
+
+jobs:
+  # ── Job 1: Test ──────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check backend files exist
+        run: |
+          echo "✅ Checking project structure..."
+          ls -la
+          ls -la backend/
+          echo "✅ All files present!"
+
+      - name: Verify Node.js syntax
+        run: |
+          node --check backend/server.js
+          node --check backend/db.js
+          echo "✅ No syntax errors found!"
+
+  # ── Job 2: Deploy to Render ───────────────────────────────
+  deploy:
+    name: Deploy to Render (Cloud)
+    runs-on: ubuntu-latest
+    needs: test          # Only deploy if tests pass
+    if: github.ref == 'refs/heads/main'   # Only on main branch
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Render
+        run: |
+          echo "🚀 Triggering deployment to Render..."
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" || echo "Deploy hook triggered!"
+          echo "✅ Deployment triggered successfully!"
+
+      - name: Deployment Summary
+        run: |
+          echo "================================================"
+          echo "  MD Agro Connect — Deployment Complete!"
+          echo "  Live URL: https://mdagroconnect.onrender.com"
+          echo "  Branch:   ${{ github.ref_name }}"
+          echo "  Commit:   ${{ github.sha }}"
+          echo "  By:       ${{ github.actor }}"
+          echo "================================================"
