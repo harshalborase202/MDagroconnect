@@ -14,3 +14,4 @@ services:
         value: mdagro
       - key: ADMIN_PASSWORD
         value: mdagro6074
+

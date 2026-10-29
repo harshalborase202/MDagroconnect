@@ -1329,11 +1329,12 @@ function initApp() {
 async function syncProductsFromServer() {
     try {
         if (typeof API_BASE === 'undefined') return;
-        const res = await fetch(`${API_BASE}/products`, { signal: AbortSignal.timeout(3000) });
+        const res = await fetch(`${API_BASE}/products`, { signal: AbortSignal.timeout(10000) });
         if (res.ok) {
             const data = await res.json();
             if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
-                // Ensure live products are displayed
+                // Ensure live products from database are loaded and displayed
+                PRODUCTS.splice(0, PRODUCTS.length, ...data.data);
                 renderProducts();
                 renderFeaturedProducts();
             }
@@ -2409,7 +2410,7 @@ async function processCheckout() {
             method: 'POST',
             headers: orderHeaders,
             body: JSON.stringify({ customerName: name, phone, address, items, userId: currentUser ? currentUser.id : null, paymentMethod: payMode }),
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(15000)
         });
         const data = await res.json();
 

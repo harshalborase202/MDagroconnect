@@ -18,3 +18,5 @@ backend/setup_aiven_db.js
 backend/view_data.js
 
 backend/seed_cloud.js
+
+backend/populate_full_store.js

@@ -1538,7 +1538,7 @@ class AdminApp {
         this.updateConnectionStatus('checking', 'Connecting to database...');
 
         try {
-            const res = await fetch(`${this.apiBase}/health`, { signal: AbortSignal.timeout(3000) });
+            const res = await fetch(`${this.apiBase}/health`, { signal: AbortSignal.timeout(10000) });
             if (res.ok) {
                 this.isOnline = true;
                 this.updateConnectionStatus('online', '🟢 Live Database Connected');
