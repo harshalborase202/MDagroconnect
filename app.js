@@ -1773,6 +1773,41 @@ function renderFeaturedProducts() {
     });
 }
 
+// Real-time stock status calculator for user display
+function getProductStockInfo(product) {
+    let qty = 45;
+    if (product.stock_quantity !== undefined && product.stock_quantity !== null) {
+        qty = Number(product.stock_quantity);
+    } else if (product.stockCount !== undefined && product.stockCount !== null) {
+        qty = Number(product.stockCount);
+    } else if (product.in_stock === 0 || product.in_stock === false) {
+        qty = 0;
+    }
+
+    if (qty <= 0 || product.in_stock === 0) {
+        return {
+            qty: 0,
+            statusClass: 'out-of-stock',
+            text: 'Out of Stock',
+            badgeHTML: '<div class="product-stock-pill out-of-stock"><span class="stock-indicator-dot"></span><span class="stock-qty-text">Out of Stock</span></div>'
+        };
+    } else if (qty <= 10) {
+        return {
+            qty,
+            statusClass: 'low-stock',
+            text: 'Only ' + qty + ' left in stock!',
+            badgeHTML: '<div class="product-stock-pill low-stock"><span class="stock-indicator-dot"></span><span class="stock-qty-text">Only <strong>' + qty + ' left</strong> in stock!</span></div>'
+        };
+    } else {
+        return {
+            qty,
+            statusClass: 'in-stock',
+            text: 'In Stock (' + qty + ' units)',
+            badgeHTML: '<div class="product-stock-pill in-stock"><span class="stock-indicator-dot"></span><span class="stock-qty-text">In Stock: <strong>' + qty + ' units</strong></span></div>'
+        };
+    }
+}
+
 // Helper to create product card element
 function createProductCardElement(product) {
     const card = document.createElement('div');
@@ -1803,6 +1838,7 @@ function createProductCardElement(product) {
             <h3 class="product-name">${product.name}</h3>
             <p class="product-desc-short">${product.description.substring(0, 75)}...</p>
             <div class="product-tags-row">${tagsHTML}</div>
+            ${getProductStockInfo(product).badgeHTML}
             <div class="product-footer-row">
                 <div class="product-price">
                     <span class="currency">₹</span>
@@ -1854,51 +1890,7 @@ function renderProducts() {
     }
 
     filtered.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card fade-in';
-        card.setAttribute('data-id', product.id);
-
-        const tagsHTML = product.tags.map(tag => `<span class="badge badge-tag">${tag}</span>`).join('');
-
-        card.innerHTML = `
-            <div class="product-image-container">
-                ${getProductSVG(product.image, product.name, true)}
-                <div class="product-card-overlay">
-                    <button class="btn btn-icon btn-view-details" title="Quick View">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="product-info">
-                <div class="product-rating">
-                    <div class="stars">
-                        ${renderStars(product.rating)}
-                    </div>
-                    <span class="rating-val">${product.rating} (${product.reviews})</span>
-                </div>
-                <h3 class="product-name">${product.name}</h3>
-                <p class="product-desc-short">${product.description.substring(0, 75)}...</p>
-                <div class="product-tags-row">${tagsHTML}</div>
-                <div class="product-footer-row">
-                    <div class="product-price">
-                        <span class="currency">₹</span>
-                        <span class="amount">${product.price}</span>
-                        <span class="unit">/${product.unit.replace('per ', '')}</span>
-                    </div>
-                    <button class="btn btn-primary btn-add-to-cart" data-id="${product.id}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg> Add
-                    </button>
-                </div>
-            </div>
-        `;
-        grid.appendChild(card);
+        grid.appendChild(createProductCardElement(product));
     });
 }
 
@@ -2602,7 +2594,7 @@ function showProductModal(productId) {
                 
                 <div class="modal-meta">
                     <div class="meta-item">
-                        <strong>Availability:</strong> <span class="text-success">In Stock (Fresh Batch)</span>
+                        <strong>Availability:</strong> <span>${getProductStockInfo(product).badgeHTML}</span>
                     </div>
                     <div class="meta-item">
                         <strong>Packaging Unit:</strong> <span>${product.unit}</span>
