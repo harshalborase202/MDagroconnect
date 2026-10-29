@@ -89,6 +89,19 @@ app.use((err, req, res, next) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
+  // Auto-seed cloud database with authentic catalog if empty
+  const pool = require('./db');
+  pool.query('SELECT COUNT(*) as count FROM products').then(([rows]) => {
+    const count = rows && rows[0] ? rows[0].count : 0;
+    if (count === 0) {
+      console.log('🌱 Products table is empty. Auto-seeding M D AGRO authentic catalog...');
+      const { seedDatabase } = require('./seed_md_agro_catalog');
+      seedDatabase().catch(e => console.warn('Auto-seed:', e.message));
+    } else {
+      console.log('📦 Product catalog active with ' + count + ' items.');
+    }
+  }).catch(e => console.warn('Catalog check deferred:', e.message));
+
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
   console.log('║       🌱  MD Agro Connect API Server         ║');
