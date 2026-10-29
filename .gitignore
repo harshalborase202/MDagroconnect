@@ -20,3 +20,4 @@ backend/view_data.js
 backend/seed_cloud.js
 
 backend/populate_full_store.js
+backend/expand_store_and_images.js
