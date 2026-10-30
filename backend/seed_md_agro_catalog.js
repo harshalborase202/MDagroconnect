@@ -909,7 +909,7 @@ async function seedDatabase() {
   try {
     pool = mysql.createPool(dbConfig);
     const conn = await pool.getConnection();
-    console.log(`✅  Connected to database (${cloudConfig.database} on ${cloudConfig.host}).`);
+    console.log(`✅  Connected to database (${dbConfig.database} on ${dbConfig.host}).`);
 
     // 1. Ensure table structure is up to date
     await conn.query(`
