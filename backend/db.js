@@ -8,7 +8,9 @@ require('dotenv').config(); // Fallback to cwd if any
 const mysql = require('mysql2/promise');
 
 // Detect if we're connecting to Aiven (cloud) or local MySQL
-const isCloud = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
+const isCloud = (process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com')) ||
+                process.env.DB_SSL === 'true' ||
+                Number(process.env.DB_PORT) === 25394;
 
 const poolConfig = {
   host:               process.env.DB_HOST     || 'localhost',
