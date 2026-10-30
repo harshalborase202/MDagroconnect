@@ -84,7 +84,7 @@ function verifyToken(req, res, next) {
     return next();
   } catch (err) {
     const isExpired = err.name === 'TokenExpiredError';
-    return res.status(401).json({
+    return res.status(isExpired ? 401 : 403).json({
       success: false,
       message: isExpired
         ? 'Your session has expired. Please sign in again.'
