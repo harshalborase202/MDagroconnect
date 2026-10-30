@@ -1,5 +1,18 @@
 [
   {
+    "id": 1791612801205,
+    "name": "Ram Rothe",
+    "phone": "9874561230",
+    "email": "ram@gmail.com",
+    "location": "newasa",
+    "password": "123456",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-10T06:13:21.205Z",
+    "total_orders": 0,
+    "total_spent": 0
+  },
+  {
     "id": 11,
     "name": "Reva pawar",
     "phone": "9099444650",
@@ -61,6 +74,56 @@
     "role": "farmer",
     "is_active": 1,
     "created_at": "2026-09-12T08:15:12.497Z"
+  },
+  {
+    "id": 12,
+    "name": "Test Farmer Patil",
+    "phone": "9997286314",
+    "email": "",
+    "location": "Nashik",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-10T04:47:56.868Z"
+  },
+  {
+    "id": 13,
+    "name": "Test Farmer Patil",
+    "phone": "9996189627",
+    "email": "",
+    "location": "Nashik",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-09T14:09:01.589Z"
+  },
+  {
+    "id": 14,
+    "name": "Test Farmer Patil",
+    "phone": "9993475919",
+    "email": "",
+    "location": "Nashik",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-09T14:05:14.678Z"
+  },
+  {
+    "id": 15,
+    "name": "Test Farmer Patil",
+    "phone": "9998887771",
+    "email": "",
+    "location": "Nashik",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-09T13:50:07.472Z"
+  },
+  {
+    "id": 16,
+    "name": "Harshal Borase",
+    "phone": "9359421867",
+    "email": "harshalborase202@gmail.com",
+    "location": "Chopda",
+    "role": "farmer",
+    "is_active": 1,
+    "created_at": "2026-10-09T16:47:10.883Z"
   },
   {
     "id": 1,

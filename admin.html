@@ -31,7 +31,7 @@
                 <div class="auth-badge">🏛️ Krishi Mall Hub</div>
             </div>
 
-            <form id="admin-login-form" class="admin-login-form" autocomplete="off">
+            <form id="admin-login-form" class="admin-login-form" autocomplete="off" onsubmit="return handleAdminLoginSubmit(event);">
                 <div class="form-group">
                     <label for="admin-user-input">Admin Username</label>
                     <div class="input-with-icon">
@@ -39,7 +39,7 @@
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                        <input type="text" id="admin-user-input" placeholder="Enter admin username" required autocomplete="off">
+                        <input type="text" id="admin-user-input" placeholder="Enter admin username" required autocomplete="username" onkeydown="if(event.key==='Enter'){handleAdminLoginSubmit(event);}">
                     </div>
                 </div>
 
@@ -50,14 +50,14 @@
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
-                        <input type="password" id="admin-pass-input" placeholder="Enter administrator password" required autocomplete="new-password">
+                        <input type="password" id="admin-pass-input" placeholder="Enter administrator password" required autocomplete="current-password" onkeydown="if(event.key==='Enter'){handleAdminLoginSubmit(event);}">
                         <button type="button" class="pwd-toggle-btn" id="pwd-toggle-btn" aria-label="Toggle password visibility">👁️</button>
                     </div>
                 </div>
 
                 <div id="auth-error-msg" class="auth-error-msg" style="display: none;"></div>
 
-                <button type="submit" class="btn btn-primary btn-block btn-lg" id="admin-login-btn">
+                <button type="button" class="btn btn-primary btn-block btn-lg" id="admin-login-btn" onclick="handleAdminLoginSubmit(event)">
                     <span>Sign In to Admin Portal</span>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -165,6 +165,15 @@
                         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                     </svg>
                     <span>Crop Advisory Insights</span>
+                </button>
+
+                <button class="nav-item" data-tab="inventory">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <span>Inventory</span>
+                    <span class="nav-badge badge-pending" id="badge-low-stock" style="display:none">0</span>
                 </button>
 
                 <button class="nav-item" data-tab="settings">
@@ -780,7 +789,184 @@
                 <!-- ════════════════════════════════════════════════════════════
                      TAB 7: SETTINGS & API CONFIGURATION
                      ════════════════════════════════════════════════════════════ -->
-                <section class="tab-pane" id="pane-settings">
+                <section class="tab-pane" id="pane-inventory">
+                    <div class="section-title-bar">
+                        <div>
+                            <h2>Stock Inventory Management</h2>
+                            <p>Track product quantities, manage restocking, review stock movements, and monitor low-stock alerts.</p>
+                        </div>
+                        <div class="title-actions">
+                            <button class="btn btn-outline btn-sm" id="inv-refresh-btn" onclick="adminApp.loadInventory()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                Refresh
+                            </button>
+                            <button class="btn btn-primary" id="inv-restock-btn" onclick="adminApp.openRestockModal()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Add Stock
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Summary KPIs -->
+                    <div class="kpi-grid" id="inv-kpi-grid" style="margin-bottom:20px">
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:#dbeafe; color:#1d4ed8;">📦</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">Total Products</div>
+                                <div class="kpi-value" id="inv-kpi-total">0</div>
+                                <div class="kpi-sub" id="inv-kpi-units">0 total units</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:#dcfce7; color:#16a34a;">✅</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">Healthy Stock</div>
+                                <div class="kpi-value" id="inv-kpi-healthy">0</div>
+                                <div class="kpi-sub">Products well stocked</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card" id="inv-kpi-low-card">
+                            <div class="kpi-icon" style="background:#fef9c3; color:#ca8a04;">⚠️</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">Low Stock Alerts</div>
+                                <div class="kpi-value" id="inv-kpi-low" style="color:#ca8a04;">0</div>
+                                <div class="kpi-sub">Need restocking soon</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:#fee2e2; color:#dc2626;">🚫</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">Out of Stock</div>
+                                <div class="kpi-value" id="inv-kpi-out" style="color:#dc2626;">0</div>
+                                <div class="kpi-sub">Unavailable products</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon" style="background:#f3e8ff; color:#7c3aed;">₹</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">Inventory Value</div>
+                                <div class="kpi-value" id="inv-kpi-value">₹0</div>
+                                <div class="kpi-sub">At current prices</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter toolbar -->
+                    <div class="filter-toolbar">
+                        <div class="filter-tabs" id="inv-status-filters">
+                            <button class="filter-btn active" data-inv-status="all">All Products</button>
+                            <button class="filter-btn" data-inv-status="low" style="color:#ca8a04;">⚠️ Low Stock</button>
+                            <button class="filter-btn" data-inv-status="out" style="color:#dc2626;">🚫 Out of Stock</button>
+                            <button class="filter-btn" data-inv-status="ok">✅ Healthy</button>
+                        </div>
+                        <div class="filter-tabs" id="inv-cat-filters" style="margin-top:8px;">
+                            <button class="filter-btn active" data-inv-cat="all">All Categories</button>
+                            <button class="filter-btn" data-inv-cat="seeds">Seeds</button>
+                            <button class="filter-btn" data-inv-cat="fertilizers">Fertilizers</button>
+                            <button class="filter-btn" data-inv-cat="protection">Crop Care</button>
+                            <button class="filter-btn" data-inv-cat="tools">Tools</button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="dash-card">
+                        <div class="table-responsive">
+                            <table class="admin-table" id="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Status</th>
+                                        <th>Low-Stock Alert</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-tbody">
+                                    <tr><td colspan="7" class="loading-state">Loading inventory...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Stock Movement Log -->
+                    <div class="dash-card" style="margin-top:24px;">
+                        <div class="dash-card-header">
+                            <h3>📋 Stock Movement History</h3>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <select id="inv-log-filter-type" class="filter-select" onchange="adminApp.loadInventoryLogs()" style="padding:6px 10px; border:1px solid var(--adm-border); border-radius:6px; font-size:0.85rem; background:var(--adm-bg); color:var(--adm-text);">
+                                    <option value="">All Types</option>
+                                    <option value="restock">Restock</option>
+                                    <option value="sale">Sale (Auto)</option>
+                                    <option value="adjustment">Adjustment</option>
+                                    <option value="damage">Damage / Loss</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table" id="inv-log-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Product</th>
+                                        <th>Movement</th>
+                                        <th>Quantity Change</th>
+                                        <th>Stock After</th>
+                                        <th>Reference</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inv-log-tbody">
+                                    <tr><td colspan="7" class="loading-state">Loading stock history...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display:flex; justify-content:center; gap:8px; padding:12px 0;" id="inv-log-pagination"></div>
+                    </div>
+                </section>
+
+                <!-- ------------------------------------------------------------
+                     Restock / Adjust Stock Modal
+                     ------------------------------------------------------------ -->
+                <div class="modal-overlay" id="restock-modal-overlay" style="display:none;" onclick="if(event.target===this)adminApp.closeRestockModal()">
+                    <div class="modal-card" style="max-width:480px;">
+                        <div class="modal-header">
+                            <h3 id="restock-modal-title">Add / Adjust Stock</h3>
+                            <button class="modal-close-btn" onclick="adminApp.closeRestockModal()">?</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group" id="restock-product-group">
+                                <label>Product</label>
+                                <select id="restock-product-select" style="width:100%; padding:10px; border:1px solid var(--adm-border); border-radius:8px; background:var(--adm-bg); color:var(--adm-text); font-size:0.95rem;">
+                                    <option value="">� Select a product �</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Movement Type</label>
+                                <select id="restock-type-select" style="width:100%; padding:10px; border:1px solid var(--adm-border); border-radius:8px; background:var(--adm-bg); color:var(--adm-text); font-size:0.95rem;">
+                                    <option value="restock">?? Restock (Add units)</option>
+                                    <option value="adjustment">?? Manual Correction (�)</option>
+                                    <option value="damage">?? Damage / Loss (remove units)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label id="restock-qty-label">Units to Add</label>
+                                <input type="number" id="restock-qty-input" min="1" placeholder="e.g. 50" style="width:100%; padding:10px; border:1px solid var(--adm-border); border-radius:8px; background:var(--adm-bg); color:var(--adm-text); font-size:0.95rem; box-sizing:border-box;">
+                            </div>
+                            <div class="form-group">
+                                <label>Note / Reason <span style="color:#94a3b8; font-weight:400;">(optional)</span></label>
+                                <input type="text" id="restock-note-input" placeholder="e.g. New batch from supplier" style="width:100%; padding:10px; border:1px solid var(--adm-border); border-radius:8px; background:var(--adm-bg); color:var(--adm-text); font-size:0.95rem; box-sizing:border-box;">
+                            </div>
+                            <div id="restock-modal-error" style="display:none; color:#dc2626; font-size:0.9rem; margin-top:8px;"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="adminApp.closeRestockModal()">Cancel</button>
+                            <button class="btn btn-primary" id="restock-submit-btn" onclick="adminApp.submitStockAdjustment()">Apply Changes</button>
+                        </div>
+                    </div>
+                </div>
+<section class="tab-pane" id="pane-settings">
                     <div class="section-title-bar">
                         <div>
                             <h2>Portal Settings & System Integration</h2>
@@ -886,15 +1072,59 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="adminApp.printOrderReceipt()">
+                <button type="button" class="btn btn-primary" onclick="adminApp.openTaxInvoiceModal(adminApp.activeOrderId)" title="Generate Krishi Kendra Tax Invoice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Print Tax Invoice</span>
+                </button>
+                <button type="button" class="btn btn-whatsapp" onclick="adminApp.sendOrderWhatsAppAlert(adminApp.activeOrderId)" title="Send Order Update to Farmer via WhatsApp">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.073-2.195-.548-1.577-.652-2.583-2.261-2.661-2.365-.078-.104-.633-.842-.633-1.606 0-.765.399-1.141.541-1.296.142-.155.311-.194.415-.194.104 0 .208.002.299.006.096.004.225-.036.35.267.13.313.442 1.077.481 1.156.039.078.065.17.013.273-.052.104-.078.169-.156.26-.078.091-.163.203-.234.273-.078.078-.16.163-.069.319.091.156.403.665.865 1.076.595.531 1.097.696 1.253.774.156.078.247.069.338-.035.091-.104.39-.455.494-.611.104-.156.208-.13.35-.078.143.052.909.429 1.065.507.156.078.26.117.299.182.039.065.039.377-.105.782z"/>
+                    </svg>
+                    <span>WhatsApp Alert</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('order-details-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated Printable Tax Invoice Modal -->
+    <div class="admin-modal" id="tax-invoice-modal">
+        <div class="admin-modal-overlay" onclick="adminApp.closeModal('tax-invoice-modal')"></div>
+        <div class="admin-modal-card modal-lg invoice-modal-container">
+            <div class="modal-header no-print">
+                <div class="modal-title-wrap">
+                    <span class="modal-pre">Official Tax Invoice</span>
+                    <h3 id="modal-invoice-title">Tax Invoice #INV-0</h3>
+                </div>
+                <button class="modal-close-btn" onclick="adminApp.closeModal('tax-invoice-modal')">&times;</button>
+            </div>
+            
+            <div class="modal-body invoice-printable-area" id="modal-invoice-content">
+                <!-- Generated Tax Invoice Content -->
+            </div>
+
+            <div class="modal-footer no-print">
+                <button type="button" class="btn btn-primary" onclick="window.print()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="6 9 6 2 18 2 18 9"></polyline>
                         <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                         <rect x="6" y="14" width="12" height="8"></rect>
                     </svg>
-                    <span>Print Delivery Slip</span>
+                    <span>Print Tax Invoice</span>
                 </button>
-                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('order-details-modal')">Close</button>
+                <button type="button" class="btn btn-whatsapp" id="invoice-whatsapp-btn" onclick="adminApp.sendOrderWhatsAppAlert(adminApp.activeOrderId)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.694.073-2.195-.548-1.577-.652-2.583-2.261-2.661-2.365-.078-.104-.633-.842-.633-1.606 0-.765.399-1.141.541-1.296.142-.155.311-.194.415-.194.104 0 .208.002.299.006.096.004.225-.036.35.267.13.313.442 1.077.481 1.156.039.078.065.17.013.273-.052.104-.078.169-.156.26-.078.091-.163.203-.234.273-.078.078-.16.163-.069.319.091.156.403.665.865 1.076.595.531 1.097.696 1.253.774.156.078.247.069.338-.035.091-.104.39-.455.494-.611.104-.156.208-.13.35-.078.143.052.909.429 1.065.507.156.078.26.117.299.182.039.065.039.377-.105.782z"/>
+                    </svg>
+                    <span>Share on WhatsApp</span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="adminApp.closeModal('tax-invoice-modal')">Close</button>
             </div>
         </div>
     </div>
@@ -1096,6 +1326,6 @@
     </div>
     <div class="admin-toast-container" id="admin-toast-container"></div>
 
-    <script src="admin.js"></script>
+    <script src="admin.js?v=2.0"></script>
 </body>
 </html>

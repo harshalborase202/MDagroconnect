@@ -6,4 +6,19 @@ node_modules/
 *.env
 config.js
 .idea/
+__pycache__/
+*.pyc
+original_version/
+*.tmp
+*serviceAccountKey*.json
+serviceAccountKey.json
+backend/serviceAccountKey.json
+fix_inventory_frontend.js
 
+backend/setup_aiven_db.js
+backend/view_data.js
+
+backend/seed_cloud.js
+
+backend/populate_full_store.js
+backend/expand_store_and_images.js

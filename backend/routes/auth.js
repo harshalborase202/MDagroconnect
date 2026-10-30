@@ -6,7 +6,8 @@ const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const pool    = require('../db');
 const memoryStore = require('../memoryStore');
-const { signToken, verifyToken, optionalToken } = require('../middleware/auth');
+const firebase = require('../firebase');
+const { signToken, generateToken, verifyToken, optionalToken } = require('../middleware/auth');
 
 // Helper to sanitize user object before sending in response
 function sanitizeUser(user) {
@@ -299,6 +300,7 @@ router.get('/me', verifyToken, async (req, res) => {
     if (rows.length > 0) {
       return res.json({
         success: true,
+        message: 'Authentication session is active and valid.',
         user: rows[0],
       });
     }
@@ -310,6 +312,7 @@ router.get('/me', verifyToken, async (req, res) => {
   if (memoryUser) {
     return res.json({
       success: true,
+      message: 'Authentication session is active and valid.',
       user: sanitizeUser(memoryUser),
     });
   }
@@ -317,6 +320,7 @@ router.get('/me', verifyToken, async (req, res) => {
   // Fallback to token payload
   return res.json({
     success: true,
+    message: 'Authentication session is active and valid.',
     user: {
       id: req.user.id,
       name: req.user.name,
@@ -326,19 +330,63 @@ router.get('/me', verifyToken, async (req, res) => {
   });
 });
 
+// ── GET /api/auth/verify ────────────────────────────────────────────────────
+// Quick token validity check
+router.get('/verify', verifyToken, (req, res) => {
+  return res.json({
+    success: true,
+    valid: true,
+    user: req.user,
+  });
+});
+
 // ── GET /api/auth/my-orders ──────────────────────────────────────────────────
 // Fetch orders with JWT token or phone/userId
 router.get('/my-orders', optionalToken, async (req, res) => {
-  const phone = req.query.phone || (req.user ? req.user.phone : null);
-  const userId = req.query.userId || (req.user ? req.user.id : null);
+  let { phone, userId } = req.query;
+
+  // If authenticated via JWT, prioritize token identities if query is missing
+  if (req.user) {
+    if (!phone && req.user.phone) phone = req.user.phone;
+    if (!userId && req.user.id) userId = req.user.id;
+  }
 
   if (!phone && !userId) {
     return res.status(400).json({
       success: false,
-      message: 'User authentication token, phone, or ID is required to fetch orders.',
+      message: 'User authentication token, phone, or ID is required to fetch orders, or provide an Authorization Bearer token.',
     });
   }
 
+  // 1. Try Cloud Firestore first for unified cloud storage
+  if (firebase.isFirebaseConnected()) {
+    try {
+      const db = firebase.getDb();
+      const snap = await db.collection('orders').get();
+      if (!snap.empty) {
+        const firestoreOrders = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          if ((phone && String(d.phone).trim() === String(phone).trim()) ||
+              (userId && String(d.user_id) === String(userId))) {
+            firestoreOrders.push(d);
+          }
+        });
+        if (firestoreOrders.length > 0) {
+          firestoreOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          return res.json({
+            success: true,
+            orders: firestoreOrders,
+            source: 'Cloud Firestore'
+          });
+        }
+      }
+    } catch (fsErr) {
+      console.warn('[auth] Firestore my-orders fetch notice:', fsErr.message);
+    }
+  }
+
+  // 2. Try MySQL
   try {
     let query = 'SELECT id, user_id, customer_name, phone, address, total_amount, status, notes, created_at FROM orders WHERE ';
     const params = [];
@@ -364,9 +412,10 @@ router.get('/my-orders', optionalToken, async (req, res) => {
     return res.json({
       success: true,
       orders,
+      source: 'MySQL'
     });
   } catch (err) {
-    console.warn('[auth] My orders MySQL error, using memoryStore fallback:', err.message);
+    console.warn('[auth] My orders MySQL notice, using memoryStore fallback:', err.message);
     const allOrders = memoryStore.getOrders();
     const filtered = allOrders.filter(o => 
       (phone && String(o.phone).trim() === String(phone).trim()) ||
@@ -375,6 +424,7 @@ router.get('/my-orders', optionalToken, async (req, res) => {
     return res.json({
       success: true,
       orders: filtered,
+      source: 'Local Store'
     });
   }
 });
