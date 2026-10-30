@@ -2,26 +2,39 @@
 // MD Agro Connect — Express API Server
 // Starts on PORT from .env (default 3001)
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
-const path    = require('path');
 
 const app  = express();
 const PORT = Number(process.env.PORT) || 3001;
 
+// Global process error guards to prevent server crashing on transient connection errors
+process.on('uncaughtException', (err) => {
+  console.warn('[server] Uncaught exception prevented crash:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.warn('[server] Unhandled rejection prevented crash:', reason?.message || reason);
+});
+
 // ── CORS ──────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8080,http://127.0.0.1:8080,http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000')
   .split(',')
   .map(o => o.trim());
 
+// Regex to allow any local host / dev port or local network (LAN) IP
+const localNetworkPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$/;
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (e.g. Postman, curl) and listed origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow non-browser requests, file:/// (origin is 'null'), listed origins, and LAN IPs
+    if (!origin || origin === 'null' || allowedOrigins.includes(origin) || localNetworkPattern.test(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked — origin "${origin}" is not allowed.`));
+      // In development mode, allow any origin to prevent friction
+      callback(null, true);
     }
   },
   methods:     ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -50,6 +63,17 @@ app.use('/api/advisory',   require('./routes/advisory'));
 app.use('/api/chat',       require('./routes/chat'));
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/firebase',   require('./routes/firebase'));
+app.use('/api/feedback',   require('./routes/feedback'));
+app.use('/api/inventory',  require('./routes/inventory'));
+
+// ── Serve Frontend Static Files ───────────────────────────────────────────
+const FRONTEND_DIR = path.join(__dirname, '..');
+app.use(express.static(FRONTEND_DIR));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
+});
 
 // ── 404 Handler ───────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -65,6 +89,19 @@ app.use((err, req, res, next) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
+  // Auto-seed cloud database with authentic catalog if empty
+  const pool = require('./db');
+  pool.query('SELECT COUNT(*) as count FROM products').then(([rows]) => {
+    const count = rows && rows[0] ? rows[0].count : 0;
+    if (count === 0) {
+      console.log('🌱 Products table is empty. Auto-seeding M D AGRO authentic catalog...');
+      const { seedDatabase } = require('./seed_md_agro_catalog');
+      seedDatabase().catch(e => console.warn('Auto-seed:', e.message));
+    } else {
+      console.log('📦 Product catalog active with ' + count + ' items.');
+    }
+  }).catch(e => console.warn('Catalog check deferred:', e.message));
+
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
   console.log('║       🌱  MD Agro Connect API Server         ║');

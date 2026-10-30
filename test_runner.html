@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Runner</title>
+</head>
+<body>
+    <div id="status">INIT</div>
+    <div id="featured-products-grid"></div>
+    <div id="products-grid"></div>
+    <div id="cart-drawer"></div>
+    <div id="cart-overlay"></div>
+    <script>
+        window.errors = [];
+        window.onerror = function(msg, url, line, col, error) {
+            window.errors.push({msg: msg, line: line, col: col});
+            document.getElementById('status').innerText = 'ERROR: ' + msg + ' line ' + line;
+        };
+    </script>
+    <script src="/app.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.errors.length === 0) {
+                    const featGrid = document.getElementById('featured-products-grid');
+                    const cardsCount = featGrid ? featGrid.children.length : 0;
+                    document.getElementById('status').innerText = 'SUCCESS_VERIFIED: products=' + PRODUCTS.length + ', cards=' + cardsCount;
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>

@@ -13,18 +13,20 @@ USE mdagroconnect;
 -- 1. products
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS products (
-  id          VARCHAR(10)    NOT NULL,
-  name        VARCHAR(200)   NOT NULL,
-  category    VARCHAR(20)    NOT NULL,
-  price       DECIMAL(10,2)  NOT NULL,
-  unit        VARCHAR(60)    NOT NULL,
-  rating      DECIMAL(3,1)   NOT NULL DEFAULT 0.0,
-  reviews     INT UNSIGNED   NOT NULL DEFAULT 0,
-  description TEXT           NOT NULL,
-  image       VARCHAR(60)    NOT NULL,
-  tags        TEXT           NOT NULL,
-  in_stock    TINYINT(1)     NOT NULL DEFAULT 1,
-  created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id                  VARCHAR(10)    NOT NULL,
+  name                VARCHAR(200)   NOT NULL,
+  category            VARCHAR(20)    NOT NULL,
+  price               DECIMAL(10,2)  NOT NULL,
+  unit                VARCHAR(60)    NOT NULL,
+  rating              DECIMAL(3,1)   NOT NULL DEFAULT 0.0,
+  reviews             INT UNSIGNED   NOT NULL DEFAULT 0,
+  description         TEXT           NOT NULL,
+  image               VARCHAR(60)    NOT NULL,
+  tags                TEXT           NOT NULL,
+  in_stock            TINYINT(1)     NOT NULL DEFAULT 1,
+  stock_quantity      INT UNSIGNED   NOT NULL DEFAULT 0,
+  low_stock_threshold INT UNSIGNED   NOT NULL DEFAULT 10,
+  created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -115,4 +117,23 @@ CREATE TABLE IF NOT EXISTS advisory_logs (
   PRIMARY KEY (id),
   INDEX idx_advisory_crop  (crop),
   INDEX idx_advisory_issue (issue)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- -------------------------------------------------------------
+-- 7. inventory_logs  (stock movement audit trail)
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS inventory_logs (
+  id              INT UNSIGNED   NOT NULL AUTO_INCREMENT,
+  product_id      VARCHAR(10)    NOT NULL,
+  change_type     VARCHAR(20)    NOT NULL,           -- 'restock', 'sale', 'adjustment', 'damage'
+  quantity_change INT            NOT NULL,            -- positive = stock in, negative = stock out
+  quantity_after  INT            NOT NULL DEFAULT 0,  -- stock level after this entry
+  reference_id    VARCHAR(50)    DEFAULT NULL,         -- order_id or manual note reference
+  note            VARCHAR(255)   DEFAULT NULL,
+  created_by      VARCHAR(60)    NOT NULL DEFAULT 'system',
+  created_at      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_inv_product (product_id),
+  INDEX idx_inv_created (created_at),
+  CONSTRAINT fk_inv_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

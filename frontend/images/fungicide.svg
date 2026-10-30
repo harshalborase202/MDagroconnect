@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="bg_fungicide" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c4a6e"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bg_fungicide)"/>
+  
+  <!-- Subtle agricultural background pattern -->
+  <circle cx="50" cy="50" r="140" fill="rgba(255,255,255,0.03)"/>
+  <circle cx="550" cy="400" r="180" fill="rgba(255,255,255,0.03)"/>
+  <circle cx="300" cy="225" r="160" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Top Brand Ribbon -->
+  <rect x="0" y="0" width="600" height="42" fill="rgba(0,0,0,0.3)"/>
+  <text x="30" y="26" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#4ade80">MD AGRO CONNECT</text>
+  <rect x="420" y="10" width="150" height="22" rx="11" fill="rgba(255,255,255,0.2)"/>
+  <text x="495" y="25" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="10" font-weight="700" letter-spacing="1" fill="#ffffff" text-anchor="middle">VERIFIED PRODUCT</text>
+
+  <!-- Central Visual Container -->
+  <rect x="50" y="65" width="500" height="320" rx="16" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+  <!-- Icon Aura -->
+  <circle cx="300" cy="170" r="75" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="300" cy="170" r="55" fill="rgba(255,255,255,0.18)"/>
+  <text x="300" y="188" font-size="64" text-anchor="middle" dominant-baseline="middle">🛡️</text>
+
+  <!-- Category Badge -->
+  <rect x="180" y="265" width="240" height="28" rx="14" fill="#0f172a"/>
+  <text x="300" y="283" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="11" font-weight="800" letter-spacing="1.5" fill="#4ade80" text-anchor="middle">CROP PROTECTION</text>
+
+  <!-- Product Title -->
+  <text x="300" y="325" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="19" font-weight="700" fill="#ffffff" text-anchor="middle">Fungicide Cure-All Powder ...</text>
+
+  <!-- Technical Spec Subtitle -->
+  <text x="300" y="355" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="12" font-weight="500" fill="rgba(255,255,255,0.85)" text-anchor="middle">75% WP Broad Spectrum Shield</text>
+
+  <!-- Bottom Quality Guarantee Bar -->
+  <rect x="0" y="415" width="600" height="35" fill="rgba(0,0,0,0.5)"/>
+  <text x="300" y="437" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="11" font-weight="600" fill="#a7f3d0" text-anchor="middle">100% Pure Agricultural Input • Direct Farmer Guarantee</text>
+</svg>

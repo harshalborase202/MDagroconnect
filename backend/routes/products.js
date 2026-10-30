@@ -9,6 +9,7 @@
 const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
+const { verifyAdmin } = require('../middleware/auth');
 
 const DEFAULT_CATALOG = [
   { id: 's1', name: 'Cotton Hybrid Pro Seeds', category: 'seeds', price: 450, unit: 'per kg', rating: 4.8, reviews: 128, description: 'High-yield cotton seeds with excellent pest resistance.', image: 'cotton-seed', tags: ['Best Seller', 'High Yield'], in_stock: 1 },
@@ -102,7 +103,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // ── POST /api/products (Create Product) ───────────────────────────────────
-router.post('/', async (req, res) => {
+router.post('/', verifyAdmin, async (req, res) => {
   try {
     const { id, name, category, price, unit, rating, reviews, description, image, tags, in_stock } = req.body;
 
@@ -148,7 +149,7 @@ router.post('/', async (req, res) => {
 });
 
 // ── PUT /api/products/:id (Update Product) ────────────────────────────────
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyAdmin, async (req, res) => {
   try {
     const { name, category, price, unit, rating, reviews, description, image, tags, in_stock } = req.body;
 
@@ -185,7 +186,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // ── PATCH /api/products/:id/stock (Toggle Stock) ──────────────────────────
-router.patch('/:id/stock', async (req, res) => {
+router.patch('/:id/stock', verifyAdmin, async (req, res) => {
   try {
     const { in_stock } = req.body;
 
@@ -213,7 +214,7 @@ router.patch('/:id/stock', async (req, res) => {
 });
 
 // ── DELETE /api/products/:id (Delete Product) ─────────────────────────────
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyAdmin, async (req, res) => {
   try {
     const [result] = await pool.execute('DELETE FROM products WHERE id = ?', [req.params.id]);
 

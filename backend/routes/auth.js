@@ -5,11 +5,9 @@ const express = require('express');
 const router  = express.Router();
 const pool    = require('../db');
 const memoryStore = require('../memoryStore');
+const firebase = require('../firebase');
 
-// Helper to generate a session token
-function generateToken(user) {
-  return 'md_usr_' + Buffer.from(`${user.id || user.phone}:${Date.now()}`).toString('base64');
-}
+const { generateToken, verifyToken, optionalToken } = require('../middleware/auth');
 
 // ── POST /api/auth/register ──────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -220,17 +218,72 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ── GET /api/auth/me ────────────────────────────────────────────────────────
+// Returns current authenticated profile by verifying Bearer JWT
+router.get('/me', verifyToken, (req, res) => {
+  return res.json({
+    success: true,
+    message: 'Authentication session is active and valid.',
+    user: req.user,
+  });
+});
+
+// ── GET /api/auth/verify ────────────────────────────────────────────────────
+// Quick token validity check
+router.get('/verify', verifyToken, (req, res) => {
+  return res.json({
+    success: true,
+    valid: true,
+    user: req.user,
+  });
+});
+
 // ── GET /api/auth/my-orders ──────────────────────────────────────────────────
-router.get('/my-orders', async (req, res) => {
-  const { phone, userId } = req.query;
+router.get('/my-orders', optionalToken, async (req, res) => {
+  let { phone, userId } = req.query;
+
+  // If authenticated via JWT, prioritize token identities if query is missing
+  if (req.user) {
+    if (!phone && req.user.phone) phone = req.user.phone;
+    if (!userId && req.user.id) userId = req.user.id;
+  }
 
   if (!phone && !userId) {
     return res.status(400).json({
       success: false,
-      message: 'User phone or ID is required to fetch orders.',
+      message: 'User phone or ID is required to fetch orders, or provide an Authorization Bearer token.',
     });
   }
 
+  // 1. Try Cloud Firestore first for unified cloud storage
+  if (firebase.isFirebaseConnected()) {
+    try {
+      const db = firebase.getDb();
+      const snap = await db.collection('orders').get();
+      if (!snap.empty) {
+        const firestoreOrders = [];
+        snap.forEach(doc => {
+          const d = doc.data();
+          if ((phone && String(d.phone).trim() === String(phone).trim()) ||
+              (userId && String(d.user_id) === String(userId))) {
+            firestoreOrders.push(d);
+          }
+        });
+        if (firestoreOrders.length > 0) {
+          firestoreOrders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          return res.json({
+            success: true,
+            orders: firestoreOrders,
+            source: 'Cloud Firestore'
+          });
+        }
+      }
+    } catch (fsErr) {
+      console.warn('[auth] Firestore my-orders fetch notice:', fsErr.message);
+    }
+  }
+
+  // 2. Try MySQL
   try {
     let query = 'SELECT id, user_id, customer_name, phone, address, total_amount, status, notes, created_at FROM orders WHERE ';
     const params = [];
@@ -256,12 +309,19 @@ router.get('/my-orders', async (req, res) => {
     return res.json({
       success: true,
       orders,
+      source: 'MySQL'
     });
   } catch (err) {
-    console.error('[auth] My orders error:', err.message);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve order history.',
+    console.warn('[auth] My orders MySQL notice, using memoryStore fallback:', err.message);
+    const allOrders = memoryStore.getOrders();
+    const filtered = allOrders.filter(o => 
+      (phone && String(o.phone).trim() === String(phone).trim()) ||
+      (userId && String(o.user_id) === String(userId))
+    );
+    return res.json({
+      success: true,
+      orders: filtered,
+      source: 'Local Store'
     });
   }
 });

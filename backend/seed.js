@@ -1,7 +1,6 @@
 // backend/seed.js
-// Seeds the `products` table with all 15 products from the frontend catalog.
+// Seeds the `products` and `users` tables.
 // Run once:  node seed.js
-//
 // Safe to re-run — uses INSERT IGNORE so existing rows are skipped.
 
 require('dotenv').config();
@@ -101,13 +100,52 @@ const PRODUCTS = [
   },
 ];
 
+const USERS = [
+  {
+    name: 'Ramesh Patil',
+    phone: '9822145670',
+    email: 'ramesh.patil@gmail.com',
+    password: 'farmer123',
+    location: 'Nashik, Maharashtra',
+    role: 'farmer',
+    is_active: 1
+  },
+  {
+    name: 'Santosh Shinde',
+    phone: '9423589123',
+    email: 'santosh.shinde@rediffmail.com',
+    password: 'farmer123',
+    location: 'Dindori, Maharashtra',
+    role: 'farmer',
+    is_active: 1
+  },
+  {
+    name: 'Ganesh Jadhav',
+    phone: '9850123456',
+    email: 'ganesh.jadhav@gmail.com',
+    password: 'farmer123',
+    location: 'Niphad, Maharashtra',
+    role: 'farmer',
+    is_active: 1
+  },
+  {
+    name: 'Kiran Verma',
+    phone: '9890123456',
+    email: 'kiran.verma@agri.in',
+    password: 'farmer123',
+    location: 'Baramati, Pune',
+    role: 'farmer',
+    is_active: 1
+  }
+];
+
 async function seed() {
   const conn = await pool.getConnection();
   try {
-    console.log('🌱  Starting product seed...\n');
+    console.log('🌱  Starting database seed...\n');
 
-    let inserted = 0;
-    let skipped  = 0;
+    let prodInserted = 0;
+    let prodSkipped  = 0;
 
     for (const p of PRODUCTS) {
       const [result] = await conn.execute(
@@ -120,15 +158,37 @@ async function seed() {
       );
 
       if (result.affectedRows > 0) {
-        console.log(`  ✅  Inserted: [${p.id}] ${p.name}`);
-        inserted++;
+        console.log(`  ✅  Inserted product: [${p.id}] ${p.name}`);
+        prodInserted++;
       } else {
-        console.log(`  ⏭️   Skipped (already exists): [${p.id}] ${p.name}`);
-        skipped++;
+        prodSkipped++;
       }
     }
 
-    console.log(`\n✔  Seed complete — ${inserted} inserted, ${skipped} skipped.`);
+    console.log(`\n✔  Products: ${prodInserted} inserted, ${prodSkipped} already existed.`);
+
+    let userInserted = 0;
+    let userSkipped  = 0;
+
+    for (const u of USERS) {
+      const [result] = await conn.execute(
+        `INSERT IGNORE INTO users
+           (name, phone, email, password, location, role, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [u.name, u.phone, u.email, u.password, u.location, u.role, u.is_active]
+      );
+
+      if (result.affectedRows > 0) {
+        console.log(`  ✅  Inserted user: ${u.name} (${u.phone})`);
+        userInserted++;
+      } else {
+        console.log(`  ⏭️   User exists: ${u.name} (${u.phone})`);
+        userSkipped++;
+      }
+    }
+
+    console.log(`\n✔  Users: ${userInserted} inserted, ${userSkipped} already existed.`);
+    console.log('\n✨ Database seeding completed successfully!');
   } catch (err) {
     console.error('\n❌  Seed failed:', err.message);
     throw err;
