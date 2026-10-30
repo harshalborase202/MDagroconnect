@@ -14,8 +14,9 @@ serviceAccountKey.json
 backend/serviceAccountKey.json
 fix_inventory_frontend.js
 
+deploy_ec2.sh
+setup_ec2_mysql.sh
 backend/setup_aiven_db.js
-backend/view_data.js
 
 backend/seed_cloud.js
 

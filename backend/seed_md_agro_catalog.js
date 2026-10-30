@@ -887,21 +887,27 @@ const MD_AGRO_PRODUCTS = [
 ];
 
 async function seedDatabase() {
-  console.log('🌾  Connecting to Aiven Cloud MySQL to seed authentic M D AGRO catalog...');
-  
-  // Prefer direct Aiven connection config if cloud is targeted
-  const cloudConfig = {
-    host:     process.env.DB_HOST || '168.144.176.218',
-    port:     Number(process.env.DB_PORT) || 25394,
-    user:     process.env.DB_USER || 'avnadmin',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'defaultdb',
-    ssl:      { rejectUnauthorized: false }
+  const isCloud = (process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com')) ||
+                  process.env.DB_SSL === 'true' ||
+                  Number(process.env.DB_PORT) === 25394;
+
+  const dbConfig = {
+    host:     process.env.DB_HOST || 'localhost',
+    port:     Number(process.env.DB_PORT) || 3306,
+    user:     process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'mdagroconnect',
   };
 
+  if (isCloud) {
+    dbConfig.ssl = { rejectUnauthorized: false };
+  }
+
+  console.log(`🌾  Connecting to MySQL (${dbConfig.database} on ${dbConfig.host}:${dbConfig.port})...`);
+  
   let pool;
   try {
-    pool = mysql.createPool(cloudConfig);
+    pool = mysql.createPool(dbConfig);
     const conn = await pool.getConnection();
     console.log(`✅  Connected to database (${cloudConfig.database} on ${cloudConfig.host}).`);
 
