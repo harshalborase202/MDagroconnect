@@ -2401,7 +2401,15 @@ async function processCheckout() {
         const res = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
             headers: orderHeaders,
-            body: JSON.stringify({ customerName: name, phone, address, items, userId: currentUser ? currentUser.id : null, paymentMethod: payMode }),
+            body: JSON.stringify({ 
+                customerName: name, 
+                phone, 
+                address, 
+                items, 
+                userId: currentUser ? currentUser.id : null, 
+                paymentMethod: payMode,
+                notes: payMode === 'upi' ? ((document.getElementById('chk-upi-utr')?.value.trim()) ? `Paid via PhonePe QR (UTR: ${document.getElementById('chk-upi-utr')?.value.trim()})` : 'Paid via PhonePe QR') : 'Cash on Delivery'
+            }),
             signal: AbortSignal.timeout(15000)
         });
         const data = await res.json();
@@ -2550,7 +2558,7 @@ function restoreCartDrawerHTML() {
                             </label>
                             <label class="pay-method-opt">
                                 <input type="radio" name="pay_mode" value="upi" onchange="toggleCheckoutPayMode(this.value)">
-                                <span>⚡ Pay via UPI QR (GPay / PhonePe / Paytm)</span>
+                                <span>⚡ Pay via PhonePe / UPI QR (Pratik Nitin Darandale)</span>
                             </label>
                         </div>
                         <div id="upi-qr-section" class="upi-qr-box" style="display:none;"></div>
@@ -3817,25 +3825,53 @@ function toggleCheckoutPayMode(mode) {
 
     if (mode === 'upi') {
         const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-        const upiId = 'mdagro@okhdfcbank';
-        const payeeName = 'MD Agro Services';
-        const note = 'Order Payment MD Agro';
+        const upiId = 'pratikdarandale@ybl';
+        const payeeName = 'Pratik Nitin Darandale';
+        const note = 'MD Agro Connect Order Payment';
         const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${subtotal}&cu=INR&tn=${encodeURIComponent(note)}`;
-        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(upiUrl)}&margin=4`;
 
         upiBox.innerHTML = `
-            <div class="upi-qr-card fade-in">
-                <div class="upi-qr-img-wrapper">
-                    <img src="${qrApi}" alt="Scan to pay ₹${subtotal} via UPI" width="160" height="160" class="upi-qr-img">
-                </div>
-                <div class="upi-qr-info">
-                    <div class="upi-amount-pill">Pay <strong>₹${Number(subtotal).toLocaleString('en-IN')}</strong></div>
-                    <p class="upi-help-text">Scan with <strong>GPay, PhonePe, Paytm, BHIM</strong></p>
-                    <div class="upi-vpa-copy">
-                        <code>${upiId}</code>
-                        <button type="button" class="btn-copy-vpa" onclick="navigator.clipboard.writeText('${upiId}'); showToast('📋 UPI ID copied to clipboard!');">Copy UPI ID</button>
+            <div class="phonepe-payment-card fade-in">
+                <div class="phonepe-header">
+                    <div class="phonepe-brand">
+                        <span class="phonepe-icon">पे</span>
+                        <span class="phonepe-title">PhonePe</span>
+                        <span class="phonepe-tag">ACCEPTED HERE</span>
                     </div>
-                    <a href="${upiUrl}" class="btn-upi-mobile-pay" target="_blank" rel="noopener">⚡ Open UPI App on Mobile</a>
+                    <div class="phonepe-verified-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Verified
+                    </div>
+                </div>
+
+                <div class="phonepe-amount-row">
+                    <span>Payable Bill Amount:</span>
+                    <span class="phonepe-amount-val">₹${Number(subtotal).toLocaleString('en-IN')}</span>
+                </div>
+
+                <div class="phonepe-qr-frame">
+                    <img src="images/phonepe-qr-card.jpg" alt="PhonePe QR - Pratik Nitin Darandale" class="phonepe-qr-img" loading="eager">
+                </div>
+
+                <div class="phonepe-payee-info">
+                    <span class="phonepe-payee-label">Account Payee</span>
+                    <strong class="phonepe-payee-name">Pratik Nitin Darandale</strong>
+                    <span class="phonepe-sublabel">M D AGRO SERVICES Official Merchant Account</span>
+                </div>
+
+                <div class="phonepe-actions">
+                    <a href="${upiUrl}" class="btn-phonepe-launch" target="_blank" rel="noopener">
+                        <span class="phonepe-icon-sm">पे</span> Pay via PhonePe / UPI App
+                    </a>
+                </div>
+
+                <div class="phonepe-utr-group">
+                    <label for="chk-upi-utr">Transaction / UTR Reference (after payment):</label>
+                    <input type="text" id="chk-upi-utr" placeholder="e.g. 430291823901" maxlength="25">
+                </div>
+
+                <div class="phonepe-security-note">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    Instant 100% Secure Bank Settlement via PhonePe & NPCI UPI
                 </div>
             </div>
         `;

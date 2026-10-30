@@ -4794,3 +4794,223 @@ body, header, .highlight-card, .product-card, .cart-drawer, .gateway-modal-card,
     background: currentColor;
     display: inline-block;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OFFICIAL PHONEPE PAYMENT GATEWAY CARD STYLES
+   ══════════════════════════════════════════════════════════════════════════ */
+.phonepe-payment-card {
+    background: #0f0f14;
+    color: #ffffff;
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(95, 37, 159, 0.25);
+    border: 1px solid #2d2447;
+    margin: 6px 0;
+}
+
+.phonepe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+}
+
+.phonepe-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.phonepe-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: #5f259f;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.phonepe-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #5f259f;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-right: 6px;
+}
+
+.phonepe-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+}
+
+.phonepe-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    background: rgba(147, 51, 234, 0.25);
+    color: #c084fc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.phonepe-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #10b981;
+    font-weight: 600;
+}
+
+.phonepe-amount-row {
+    background: rgba(95, 37, 159, 0.25);
+    border: 1px solid rgba(147, 51, 234, 0.35);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.phonepe-amount-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #4ade80;
+}
+
+.phonepe-qr-frame {
+    background: #000000;
+    border-radius: 10px;
+    padding: 6px;
+    display: inline-block;
+    border: 2px solid #5f259f;
+    margin-bottom: 8px;
+    max-width: 220px;
+    overflow: hidden;
+}
+
+.phonepe-qr-img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
+}
+
+.phonepe-payee-info {
+    margin-bottom: 10px;
+}
+
+.phonepe-payee-label {
+    display: block;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.phonepe-payee-name {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-top: 2px;
+}
+
+.phonepe-sublabel {
+    display: block;
+    font-size: 0.72rem;
+    color: #a78bfa;
+}
+
+.phonepe-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.btn-phonepe-launch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #5f259f;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-phonepe-launch:hover {
+    background: #7731c2;
+    transform: translateY(-1px);
+}
+
+.phonepe-utr-group {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.phonepe-utr-group label {
+    display: block;
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.phonepe-utr-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    padding: 6px 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border 0.2s ease;
+}
+
+.phonepe-utr-group input:focus {
+    border-color: #a78bfa;
+}
+
+.phonepe-security-note {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+[data-theme="dark"] .phonepe-payment-card {
+    background: #09090d;
+    border-color: #3b2d5c;
+}
